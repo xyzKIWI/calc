@@ -1,7 +1,7 @@
 # 急診臨床計算機（ed-calc）
 
 **72 個**急診常用評分、公式與決策規則（作者本機完整版 73 個，FLACC 因授權未收錄），做成 9 個離線單頁 HTML（不連外、無追蹤）。每項標示原始文獻、來源數與適用條件。
-上線網址：<https://tools.kiwi-ai.uk/calc/>（院內網可通）｜GitHub Pages：<https://xyzkiwi.github.io/ed-calc/>
+上線網址：<https://tools.kiwi-ai.uk/calc/>（院內網可通）｜GitHub Pages：<https://xyzkiwi.github.io/calc/>
 
 ## 收錄
 
