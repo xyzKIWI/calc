@@ -220,15 +220,19 @@ describe('canadian-ct-head-injury-trauma-rule｜Canadian CT Head', () => {
     assert.match(run(['Yes', 'No', 'No', 'Yes']).value, /^Rule not applicable/);
   });
 
-  test('與 MDCalc 不一致：「危險機轉」題目未列出 pedestrian struck／occupant ejected', { todo: '見 TEST_REPORT.md：Canadian CT Head 危險機轉定義不完整' }, () => {
+  test('「危險機轉」題目含 pedestrian struck／occupant ejected（2026-10-25 修正）', () => {
     // 出處：MDCalc 608：「"Dangerous" mechanism? Pedestrian struck by motor vehicle, occupant ejected from motor vehicle,
-    // or fall from >3 feet or >5 stairs.」；Stiell 2001 Lancet 原文同義。頁面題目只寫「Fall from >3 feet or >5 stairs」。
-    // 文獻病例 Mower 2017 Box 3 Patient 1（16.5 歲行人被車撞、短暫 LOC、GCS 15）在完整規則下應做 CT。
+    // or fall from >3 feet or >5 stairs.」；Stiell 2005（經 Wikipedia 轉引）同義。
     const o = run([...enter, 'No', 'No', 'No', 'No', 'No', 'No']);
-    assert.match(o.question, /Pedestrian struck/i);
+    assert.match(o.question, /Pedestrian struck by motor vehicle, occupant ejected from motor vehicle/);
   });
 
-  test('與 MDCalc／原文不一致：適用條件未含 witnessed disorientation 與 GCS 13–15', { todo: '見 TEST_REPORT.md：Canadian CT Head 適用條件不完整' }, () => {
+  test('文獻病例：Mower 2017 Box 3 Patient 1（16.5 歲行人被車撞、短暫 LOC、GCS 15）→ Consider CT', () => {
+    // 出處：Mower WR, et al. PLoS Med 2017（PMC5507397）Box 3 Patient 1；此病例無高風險因子，靠危險機轉（行人被撞）判為需 CT。
+    assert.equal(run([...enter, 'No', 'No', 'No', 'No', 'No', 'No', 'Yes']).value, 'Consider obtaining a CT scan');
+  });
+
+  test('適用條件含 GCS 13–15 與 witnessed disorientation（2026-10-25 修正）', () => {
     // 出處：MDCalc 608：「Apply only to patients presenting within 24 hours of injury with a … GCS score of 13-15 and at least one
     // of the following: Loss of consciousness. Amnesia to the head injury event. Witnessed disorientation.」
     const o = run([]);

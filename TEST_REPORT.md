@@ -2,19 +2,19 @@
 
 - 產出日期：2026-10-25
 - 範圍：公開版 9 頁、**72 個**計算機（README：作者本機完整版 73 個，FLACC 因授權未收錄，本 repo 沒有 FLACC，故無從測試）
-- 結果：`node --test tests/*.test.js` → **283 個測試，275 通過、0 失敗、8 個 `todo`**（`todo` 即下方「與文獻不一致」的案例，測試寫的是文獻預期值，目前頁面不符，所以標成 todo，不讓 CI 變紅）
-- **沒有修改任何 `calc-*.html`**：公式、權重、切點、判讀文字全部原封不動。
+- 結果：`node --test tests/*.test.js` → **282 個測試，281 通過、0 失敗、1 個 `todo`**（`todo` 是 NAC 劑量上限，見第 2.2 節）
+- **修正紀錄**：第一輪只補測試、不改頁面。第二輪經 Kiwi 同意，把**原文已確認**的 8 項（7 個計算機）修進頁面，另修 2 處引用文字（第 2.1 節）。原文無法確認或屬院內決策的，維持原樣並留在報告。
 
-> 本報告只陳述「頁面輸出」與「查到的來源」之間的差異，**哪一邊對、要不要改，由 Kiwi 判斷**。
+> 頁面是由作者本機的規格檔與產生器生成的。第 2.1 節的修正**必須同步改回本機規格檔**，否則下次重新產生頁面時會被蓋掉。屆時這些測試會失敗，正好當作提醒。
 
 ---
 
 ## 1. 測試怎麼做
 
 1. **不抽函式、不改頁面**。`tests/harness.js` 讀入原始 HTML，建一個極簡 DOM，用 Node 內建 `node:vm` 原封不動執行頁面第一段 `<script>`（計算引擎）。測試的動作和使用者一樣：勾選 radio、填欄位或選下拉、按「計算」或點決策樹按鈕，再讀畫面上的結果文字。所以測到的是頁面本身的程式碼，不是另寫的一份。
-   - 這樣做的原因：任務要求「行為完全不變」。完全不動 HTML 是最保險的做法；README 也提到成品有防竄改雜湊，改動會影響既有驗證流程。
+   - 這樣做的原因：任務要求「行為完全不變」，不抽函式就不會改動頁面行為。（第二輪的臨床修正是另外、刻意的改動，見第 2.1 節。）
    - harness 也模擬瀏覽器的兩個細節：`type=number` 欄位輸入非數字時值變成空字串；下拉選單設成不存在的值時變成空字串。
-2. **與真瀏覽器交叉比對**：在本機用預裝的 Chromium（Playwright）對 20 個代表性情境（含邊界、缺值、矛盾輸入、決策樹）實際點擊，畫面輸出與 harness **20/20 完全相同**。這只是開發時的驗證，沒有放進 CI；CI 只用 Node，無任何相依套件。
+2. **與真瀏覽器交叉比對**：在本機用預裝的 Chromium（Playwright）對 20 個代表性情境（含邊界、缺值、矛盾輸入、決策樹）實際點擊，畫面輸出與 harness **20/20 完全相同**。第二輪修正後，再用 Chromium 確認修正項目的畫面輸出，並確認 9 頁載入時都沒有 JavaScript 錯誤。這只是開發時的驗證，沒有放進 CI；CI 只用 Node，無任何相依套件。
 3. **每個計算機的測試至少包含**：
    - 一個有出處的範例（測試註解寫出處與類型，見第 4 節）；
    - 切點上下的邊界值（含半分、剛好等於切點、顯示四捨五入但判讀用原始值）；
@@ -35,29 +35,42 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 
 ---
 
-## 2. 與文獻不一致（測試標成 `todo`，共 6 個計算機、8 個測試）
+## 2. 與文獻不一致
 
-| # | 計算機 | 輸入 | 文獻預期 | 頁面實際 | 出處 |
-|---|---|---|---|---|---|
-| 1 | Wells PE（三層模型） | 只有「HR >100」（1.5 分）；或只有「制動／手術」、只有「曾 PE/DVT」 | 三層 **Low**（低機率 <2.0）；二層 PE unlikely | `Three-Tier Model: Moderate Risk`（程式為 `score<=1` 才算 Low） | Wells PS, et al. Thromb Haemost 2000;83:416-420（PMID 10744147）摘要：「low probability if the score was <2.0, moderate of the score was 2.0 to 6.0」；MDCalc 115：「low risk (<2 points)」 |
-| 2 | ABCD² | 年齡 ≥60＋血壓 ≥140/90＋單側無力 = 4 分；同上＋≥60 分鐘＋糖尿病 = 7 分 | 4–5 分 moderate（2 日中風風險 4.1%）；6–7 分 high（8.1%） | 判讀欄**空白**（頁面只設了 0–3 分一層） | Johnston SC, et al. Lancet 2007;369:283-292 摘要（PMID 17258668）：「high risk (score 6-7, 8.1% 2-day risk) … moderate risk (score 4-5, 4.1%) … low risk (score 0-3, 1.0%)」；MDCalc 357 相同 |
-| 3 | Ottawa SAH（適用條件） | 15 歲病人 | 不在原研究族群內 | 適用條件寫「Age ≥15 years」，15 歲可通過 | Perry JJ, et al. JAMA 2013;310:1248-1255 規則框「For alert patients older than 15 y」、Methods「16 years or older」；Perry 2010 BMJ「aged ≥16」。（MDCalc 自身混用「≥15」與「>15」） |
-| 4 | BRUE 2016 低風險 | 61 天大、33 週出生（矯正 ≈41.7 週），其餘符合低風險 | AAP 指引要求「出生 ≥32 週**且**矯正 ≥45 週」→ 應為 higher-risk | `Lower-risk BRUE`（≥32 週出生後不再問矯正週數；頁面邏輯與 MDCalc 相同） | Tieder JS, et al. Pediatrics 2016;137:e20160590（經 AAFP 指引摘要 https://www.aafp.org/pubs/afp/issues/2017/0301/p330.html 核對；AAP 原文全文未能取得） |
-| 5 | Canadian CT Head（危險機轉） | 行人被車撞、短暫 LOC、GCS 15、其餘皆否（Mower 2017 Box 3 Patient 1） | 危險機轉成立 → Consider CT | 題目只寫「Fall from >3 feet or >5 stairs」，照字面答「否」會得到 `CT Unnecessary` | MDCalc 608：「Pedestrian struck by motor vehicle, occupant ejected from motor vehicle, or fall from >3 feet or >5 stairs」；Stiell 2001 Lancet 同義；病例出自 Mower WR, et al. PLoS Med 2017（PMC5507397） |
-| 6 | Canadian CT Head（適用條件） | 只有目擊的定向障礙、無 LOC／失憶 | 仍適用本規則；且需 GCS 13–15、24 小時內 | 入口題只問「LOC and/or amnesia?」，答否 → 不適用；也沒問 GCS 13–15 | MDCalc 608：「GCS score of 13-15 and at least one of: Loss of consciousness. Amnesia to the head injury event. Witnessed disorientation.」；Stiell 2001 Lancet「GCS score of 13-15」 |
-| 7 | Acetaminophen NAC 兩袋法 | 體重 150 kg，標準兩袋 | 第一袋上限 22 g、第二袋上限 11 g（成人上限體重 110 kg） | 第一袋 30000 mg、第二袋 15000 mg（無上限） | Chiew AL, et al. Med J Aust 2020;212:175-183 Box 7：「200 mg/kg (maximum 22 g)」、「100 mg/kg (maximum 11 g)」。**註**：頁面依高醫院內流程（2021/12/09），院內可能有意不設上限，此處無法查核院內文件 |
+### 2.1 已修正（2026-10-25，原文已確認）
 
-> 第 5、6 列是同一個計算機（Canadian CT Head）的兩個測試；第 2 列的 4 分、7 分各一個測試。合計 8 個 `todo`。
+共 8 項，涉及 7 個計算機（Canadian CT Head 有 2 項）。每一項都有對應測試：修正前是 `todo` 或「現況紀錄」測試，修正後改寫為檢查新行為的一般測試，已全部通過。共用計算引擎在 8 頁各有一份相同的副本，修改時 8 份一起改，修改後 8 份仍完全一致。
 
----
+| # | 計算機 | 修正前 | 修正後 | 依據 |
+|---|---|---|---|---|
+| 1 | Wells PE（三層模型） | `score<=1` 才算 Low，只有一項 1.5 分（例如 HR >100）時顯示 Moderate | `score<2` 為 Low，1.5 分顯示 Low | Wells PS, et al. Thromb Haemost 2000;83:416-420 摘要（PMID 10744147）：「low probability if the score was <2.0, moderate of the score was 2.0 to 6.0」；MDCalc 115：「low risk (<2 points)」 |
+| 2 | ABCD² | 只有 0–3 分一層，4–7 分時判讀欄空白 | 新增「4–5 分：中度風險；2 日中風風險 4.1%」、「6–7 分：高風險；2 日中風風險 8.1%」 | Johnston SC, et al. Lancet 2007;369:283-292 摘要（PMID 17258668）：「high risk (score 6-7, 8.1% 2-day risk) … moderate risk (score 4-5, 4.1%) … low risk (score 0-3, 1.0%)」 |
+| 3 | Ottawa SAH（適用條件） | 「Age ≥15 years」 | 「Age >15 years (≥16)」 | Perry JJ, et al. JAMA 2013 全文：規則框「For alert patients older than 15 y」、Methods「adult patients (defined as patients 16 years or older)」 |
+| 4 | BRUE 2016 低風險 | 出生 ≥32 週直接通過，出生 <32 週才問矯正週數（「或」）；年齡寫「>2 months」 | 出生 ≥32 週**且**矯正（postconceptional）≥45 週才通過；年齡改為「>60 days」；卡片說明的註腳同步改寫 | AAP 指引 Tieder 2016（經 AAFP 摘要 https://www.aafp.org/pubs/afp/issues/2017/0301/p330.html 核對）：「age older than 60 days」、「birth at 32 weeks or more of gestation and corrected gestational age of at least 45 weeks」。註：MDCalc 4016 仍是「或」的寫法；README 的來源層級為原始文獻優先於 MDCalc |
+| 5 | Canadian CT Head（危險機轉） | 「Dangerous mechanism? Fall from >3 feet or >5 stairs」 | 「Dangerous mechanism? Pedestrian struck by motor vehicle, occupant ejected from motor vehicle, or fall from >3 feet or >5 stairs」 | MDCalc 608 原句；Stiell 2005（經 Wikipedia 轉引）、WikEM 同義。文獻病例 Mower 2017 Box 3 Patient 1（行人被撞、GCS 15）已加入測試 |
+| 6 | Canadian CT Head（適用條件） | 「Loss of consciousness and/or amnesia?」 | 「Minor head injury within 24 h with GCS 13–15 and witnessed loss of consciousness, definite amnesia, or witnessed disorientation?」 | Stiell 2001 Lancet 摘要（PubMed 11356436）：「presented with a Glasgow Coma Scale (GCS) score of 13-15 after head injury」；MDCalc 608：「within 24 hours … GCS 13-15 and at least one of: Loss of consciousness. Amnesia… Witnessed disorientation.」 |
+| 7 | West Haven 第 2 級 | 「Disoriented to time/space; …」 | 「Disoriented to time; …」（分數不變） | AASLD/EASL 2014 Practice Guideline 表格（PDF 已逐字核對）：Grade II「Disoriented for time」；Grade III「Disoriented also for space」 |
+| 8 | NEWS（2012）0 分 | 「NEWS 0 is below the specified NEWS 1–4 low-score band.」 | 「Low score (NEWS 0).」 | RCP 2012 NEWS 報告 Chart 2（PDF 已逐字核對）：「0 … Aggregate 1–4 → Low」 |
+
+同時修正兩處引用文字（非臨床內容）：
+- 維持輸液：Holiday → **Holliday**，並補上卷期頁碼「Pediatrics 1957;19(5):823-832」。
+- Parkland：改為 Baxter 1974 在 PubMed 上的標題「Fluid volume and electrolyte changes **of** the early postburn period」，卷期改為「1(4):693–703」。
+
+頁尾的「資料校對」日期（2026-08-22）沒有改，請在同步規格檔時一併更新。
+
+### 2.2 未修正（測試仍為 `todo`）
+
+| 計算機 | 輸入 | 公開指引 | 頁面 | 未修正的原因 |
+|---|---|---|---|---|
+| Acetaminophen NAC 兩袋法 | 體重 150 kg，標準兩袋 | 第一袋上限 22 g、第二袋上限 11 g（成人上限體重 110 kg）——Chiew AL, et al. Med J Aust 2020;212:175-183 Box 7 | 第一袋 30000 mg、第二袋 15000 mg（無上限） | 頁面依高醫院內流程（2021/12/09）。院內可能有意不設上限，這份院內文件我無法查核，需要 Kiwi 確認 |
 
 ## 3. 需要醫師判斷的疑點（數字與來源大致相符，但有邊界、措辭或遺漏）
 
-這些項目的測試寫的是**頁面目前的行為**（測試名稱標「現況紀錄」），會通過；列在這裡供判斷是否要調整。
+這些項目的測試寫的是**頁面目前的行為**（部分測試名稱標「現況紀錄」），會通過。來源互相矛盾、只有次級來源，或需要新增輸入欄位的，都沒有改，列在這裡供判斷。
 
 **決策規則的適用條件／分支**
 - **Canadian C-Spine**：危險機轉跌落高度頁面寫「≥1 Meter/5 Stairs」，Stiell 2010 CMAJ 寫「more than 3 ft (91 cm)」、MDCalc 寫「≥3 ft (0.9 m)」。適用條件沒有問年齡（原研究為成人，<16 歲排除；只核對到摘要）。
-- **Canadian CT Head**：失憶頁面與 MDCalc 用「≥30 分鐘」，Lancet 摘要與 Mower 2017 寫「>30 min」。陽性時只顯示「Consider obtaining a CT scan」，不區分高風險（神經外科介入）或中風險。排除條件只有 MDCalc 的三項（<16 歲、抗凝血、傷後癲癇），原文排除條件更多。
+- **Canadian CT Head**：失憶頁面與 MDCalc 用「≥30 分鐘」，PubMed 摘要與 Mower 2017 寫「>30 min」（但 PubMed 版摘要也把嘔吐「≥2」寫成「>2」、年齡「≥65」寫成「>65」，疑似符號遺失，無法據此判定）；危險機轉的跌落高度，各來源也有「>3 ft」與「≥3 ft」兩種寫法。陽性時只顯示「Consider obtaining a CT scan」，不區分高風險（神經外科介入）或中風險。排除條件只有 MDCalc 的三項（<16 歲、抗凝血、傷後癲癇），原文排除條件更多。
 - **Pittsburgh Knee**：機轉不是鈍傷／跌倒時顯示「Cannot be applied」；MDCalc 的說法是「Patients who do not meet the Pittsburgh decision rules do not need an x-ray」。
 - **New Orleans**：適用條件沒有「簡短神經學檢查正常」與「24 小時內」（Haydel 2000、MDCalc 都有）。頁面自加的「≥18 歲」「使用抗血栓藥物 → 不適用」引自 ACEP 2023，全文未核對。
 - **Ottawa SAH**：適用條件沒有「清醒（GCS 15）」與「頭痛發作 14 天內」（JAMA 2013 納入條件）。
@@ -68,7 +81,6 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 **切點、分層與數字**
 - **ROX**：「<3.85 高失敗風險」是 Roca 2019 的 **12 小時**切點；2 小時、6 小時分別是 <2.85、<3.47。頁面沒有時間點輸入，一律用 3.85。例：6 小時 ROX 3.60 頁面判高風險，但依 6 小時切點並未低於 3.47。（≥4.88 在 2／6／12 小時都適用，沒問題。）
 - **S/F ratio**：2024 Global ARDS 定義要求插管病人 PEEP ≥5 cm H₂O，頁面在「Intubated」模式沒有問 PEEP；高海拔校正、估算 FiO₂ 也未實作。所有切點（148／235／315、SpO₂ ≤97%、HFNC ≥30 L/min、NIV ≥5）與原文一致。
-- **NEWS（2012）**：0 分顯示「below the specified NEWS 1–4 low-score band」；RCP 2012 Chart 2 把 0 分也列為 Low clinical risk（至少每 12 小時監測）。
 - **MEWS**：選項與 MDCalc 輸入完全相同，但 MDCalc 自己的說明表（>130、>30、>38.5、111-129）以及 PMC6526008 的版本（HR ≤39／40–50；RR 10–18／19–20）不一樣。**HR 剛好 40 次／分沒有對應選項**（<40 與 41-50 之間）。Subbe 2001 原始表格未能取得原文。
 - **尿量**：<0.5 mL/kg/hr 與 KDIGO 數字相同，但 KDIGO 要求持續 ≥6 小時，頁面任何時數都套用。「0.5–1.0 Reduced」「>1.0 Normal」兩層**未找到可驗證來源**。
 - **NIHSS**：頁面用「<4 預後良好」並標「原文唯一切點」；MDCalc 同時有「<4」與「4 or less」兩種寫法，剛好 4 分的歸屬有爭議。NIH 表單本身沒有判讀切點。（截肢／插管項記為 UN，與 NIH 表單一致；MDCalc 則記 0 分。）
@@ -85,20 +97,16 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 - **Killip**：Class I／II 院內死亡率頁面寫「<6%」「<17%」，次級來源（引 Killip 1967）為 6%、17%；Class IV 寫「30-day mortality 81%」，但 81% 在該來源是 1967 年的院內死亡率；30 天死亡率區間（2-3／5-12／10-20%）**未找到可驗證來源**。
 
 **措辭與其他**
-- **West Haven**：第 2 級寫「Disoriented to time/space」；AASLD/EASL 2014 指引第 II 級只有「time」，「space」屬第 III 級（頁面文字與 MDCalc 逐字相同）。第 0 級實為「minimal／covert」，沒有「完全正常」選項。
+- **West Haven**：第 0 級實為 AASLD/EASL 的「Minimal／covert」，沒有「Unimpaired（完全正常）」選項。（第 2 級措辭已修正，見 2.1。）
 - **TWIST**：高風險「surgical exploration recommended」的措辭在 Barbosa 2013 摘要中找不到（摘要只說 ≥5 分 PPV 100%、超音波只用於中風險）；切點 2／5 相符。
 - **Burch-Wartofsky**：25–44 分 MDCalc 寫「impending」，部分次級來源寫「supports the diagnosis」；切點相同。原始 1993 文獻未能取得原文。
 - **QTc**：Rautaharju 公式頁面用 QT × (120+HR)/180（ACEP 2021 文章所列）；Vandenberk 2016 JAHA 用的是另一個同名公式（QT − 0.185(RR−1) + k，分性別）。
-- **GCS**：「含 NT 不加總」與 MDCalc（引 Teasdale 2014）相同，但頁面標註的出處 glasgowcomascale.org 上查到的頁面沒有這句話。
+- **GCS**：「含 NT 不加總」與 MDCalc（引 Teasdale 2014）相同，但頁面標註的出處 glasgowcomascale.org 上查到的頁面沒有這句話。Rosen 10e／Tintinalli 9e 的嚴重度分級這次仍無法取得教科書內容核對（見第 5 節）。
 - **mRS**：van Swieten 1988 原文為 0–5 六級；頁面與 MDCalc 加了 6＝死亡。
 - **Hunt-Hess**：沒有 MDCalc 的死亡率欄，也沒有原文「嚴重全身疾病或血管痙攣時往下調一級」的規則。
 - **BRUE 2.0**：「Prematurity」欄位沒有定義（MDCalc：<32 週，或 32–38 週且矯正 <45 週）。原文摘要說 >60 天者嚴重疾病比例較高（OR 1.43），但公式的年齡係數為負（越大風險越低），屬原文內部矛盾。
 - **NAC 兩袋法**：兒童稀釋液固定 500／1000 mL（Chiew 2020：7 mL/kg 上限 500 mL、14 mL/kg 上限 1000 mL）；續用門檻頁面為「>10 μg/mL」、Chiew 為「≥10 mg/L」；頁面引用的 Rumack 1981 是口服方案，並非兩袋法的出處。
 - **九則法**：結果單位顯示「分」（例如「31.5 分」），實際是 %TBSA。
-
-**引用文字小錯（非臨床內容）**
-- 維持輸液：作者拼成「Holiday」，應為 Holliday；缺卷頁（Pediatrics 1957;19(5):823-32）。
-- Parkland：Baxter 1974 標題 PubMed 為「…changes **of** the early postburn period」。
 
 ---
 
@@ -111,27 +119,27 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 - **D**＝只依公式定義手算（公式本身已查證）
 - 「未找到」＝判讀切點或數字找不到可驗證來源
 
-狀態：**通過**＝頁面與查到的來源一致；**不一致**＝第 2 節；**疑點**＝第 3 節。
+狀態：**通過**＝頁面與查到的來源一致；**已修正**＝第 2.1 節，2026-10-25 已改；**不一致**＝第 2.2 節，未改；**疑點**＝第 3 節。
 
 | 頁 | 計算機 | 狀態 | 範例類型與出處 |
 |---|---|---|---|
 | 核心十項 | MAP | 通過 | C／D：MDCalc 74 公式與 60、65 mmHg 切點 |
 | 核心十項 | 休克指數 | 通過 | D：MDCalc 1316 公式（頁面無判讀分層） |
-| 核心十項 | Parkland | 通過（引用小錯） | D：MDCalc 83 |
-| 核心十項 | 4-2-1 維持輸液 | 通過（引用小錯） | D：MDCalc 72 |
+| 核心十項 | Parkland | 通過（引用已修正） | D：MDCalc 83 |
+| 核心十項 | 4-2-1 維持輸液 | 通過（引用已修正） | D：MDCalc 72 |
 | 核心十項 | qSOFA | 通過 | C：Seymour 2016 JAMA 摘要 |
 | 核心十項 | CRB-65 | 通過 | C：Lim 2003 Thorax 摘要（項目）＋MDCalc（分層） |
 | 核心十項 | NEXUS 頸椎 | 通過 | C：Hoffman 2000 NEJM 摘要 |
 | 核心十項 | Ottawa 膝 | 通過 | C：Stiell 1995 Ann Emerg Med 摘要 |
 | 核心十項 | sPESI | 通過 | B：Jiménez 2010 摘要 1.1%／8.9%（「1.5% 復發」僅見於 MDCalc，未核對原文） |
-| 核心十項 | ABCD² | **不一致** | B：Johnston 2007 摘要三層風險 |
+| 核心十項 | ABCD² | **已修正** | B：Johnston 2007 摘要三層風險 |
 | 外傷 | ABC 大量輸血 | 通過（疑點） | C：Nunez 2009 摘要 |
 | 外傷 | NEXUS Head CT | 通過 | A：Mower 2017 Box 3 病例 1、3 |
 | 外傷 | Pittsburgh 膝 | 疑點 | C：Seaberg 1994 摘要 |
 | 外傷 | 九則法 | 通過（顯示單位） | C：StatPearls Rule of Nines |
 | 外傷 | STUMBL | 通過（疑點） | **A：Battle 2014 文中範例（67 歲、3 根肋骨、COPD、SpO₂ 87% → 24 分）**＋B：12、36 分 |
 | 外傷 | Canadian C-Spine | 疑點 | C：Stiell 2001 JAMA 摘要 |
-| 外傷 | Canadian CT Head | **不一致** | A：Mower 2017 Box 3 病例 1（用於 todo）＋C：Stiell 2001 Lancet 摘要 |
+| 外傷 | Canadian CT Head | **已修正**（另有疑點） | A：Mower 2017 Box 3 病例 1＋C：Stiell 2001 Lancet 摘要 |
 | 外傷 | Modified Denver | 疑點 | C：MDCalc 10653（原始文獻未找到可驗證範例） |
 | 外傷 | New Orleans | 疑點 | C：Haydel 2000 NEJM |
 | 外傷 | NEXUS Chest CT | 通過（措辭） | A：Rodriguez 2015 文中唯一漏失病例（規則陰性）＋C |
@@ -148,7 +156,7 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 | 心血管 | ADD-RS | 通過 | C：Rogers 2011、Nazerian 2018（ADvISED）摘要 |
 | 心血管 | Revised Geneva | 通過 | B：Le Gal 2006 摘要盛行率 8／28／74% |
 | 心血管 | Wells DVT | 通過（疑點） | C：Wells 2003 NEJM（兩層表依 NHS 改編版） |
-| 心血管 | Wells PE | **不一致** | C：Wells 2000 Thromb Haemost 摘要 |
+| 心血管 | Wells PE | **已修正** | C：Wells 2000 Thromb Haemost 摘要 |
 | 神經 | mRS | 通過 | C：MDCalc 1890 |
 | 神經 | RACE | 通過 | C：Pérez de la Ossa 2014 摘要（≥5）、racescale.org |
 | 神經 | tPA | 通過 | D：FDA Activase 仿單 2015 |
@@ -157,18 +165,18 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 | 神經 | Hunt-Hess | 通過 | B：MDCalc 404 分級表 |
 | 神經 | ICH Score | 通過 | B：Hemphill 2001 摘要（0 分、5 分）；1–4 分依 MDCalc |
 | 神經 | NIHSS | 疑點 | C：NIH/NINDS 量表表單逐項 |
-| 神經 | Ottawa SAH | **不一致** | C：Perry 2013 JAMA 規則框 |
+| 神經 | Ottawa SAH | **已修正**（另有疑點） | C：Perry 2013 JAMA 規則框 |
 | 兒科 | BRUE 2.0 | 通過（疑點） | D：MDCalc 10400 公式（Nama 2022 原文係數表未能取得原文） |
 | 兒科 | PECARN 頸椎 | 通過 | B：Leonard 2024（187/1549、217/7676、29/13205） |
 | 兒科 | PECARN 腹部 | 通過 | B：Holmes 2013 順序＋各節點百分比（僅次級來源） |
-| 兒科 | BRUE 2016 | **不一致** | C：Tieder 2016 AAP（經 AAFP 摘要） |
+| 兒科 | BRUE 2016 | **已修正** | C：Tieder 2016 AAP（經 AAFP 摘要） |
 | 兒科 | PECARN 頭部 | 通過 | C：Kuppermann 2009 摘要、MDCalc 589 |
 | 兒科 | 兒童氣管內管 | 通過（未取整） | D：MDCalc 58 |
 | 兒科 | PTS | 通過 | C：MDCalc 10185（Tepas） |
 | 兒科 | Westley | 通過 | C：MDCalc 677（分層出自 Bjornson 2005） |
 | 檢傷 | IBW／ABW | 通過 | D：MDCalc 68（Devine 原文未能取得原文） |
 | 檢傷 | MEWS | 疑點 | C：Subbe 2001 摘要（≥5）；選項依 MDCalc |
-| 檢傷 | NEWS | 疑點（0 分） | C：RCP 2012 Chart 1／2 |
+| 檢傷 | NEWS | **已修正**（0 分） | C：RCP 2012 Chart 1／2 |
 | 檢傷 | NEWS2 | 通過 | C：RCP 2017 Chart 1／2 |
 | 檢傷 | 尿量 | 疑點 | D：算術定義；0.5–1.0／>1.0 分層**未找到** |
 | 檢傷 | RASS | 通過 | C：Ely 2003 JAMA RASS 表＋MDCalc 目標值 |
@@ -184,11 +192,11 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 | 中毒 | Acetaminophen NAC | **不一致**（相對公開指引） | C：Wong 2016、Chiew 2020；院內流程**未找到可驗證範例** |
 | 腸胃 | Rockall（完整） | 通過（標籤疑點） | B：Rockall 1996 Table IV(B) |
 | 腸胃 | Rockall（內視鏡前） | 通過（原文自相矛盾） | B：Rockall 1996 Table IV(A) |
-| 腸胃 | West Haven | 疑點（措辭） | C：AASLD/EASL 2014 指引表 |
+| 腸胃 | West Haven | **已修正**（第 2 級措辭；第 0 級疑點） | C：AASLD/EASL 2014 指引表 |
 | 腸胃 | Burch-Wartofsky | 通過 | C：MDCalc 3816（1993 原文未能取得原文） |
 | 腸胃 | TWIST | 通過（措辭） | C：Barbosa 2013 摘要（切點 2／5） |
 
-統計：通過 53（其中多項附小註記，詳見第 3 節）、疑點 13、不一致 6，合計 72。
+統計：通過 53（其中多項附小註記，詳見第 3 節）、已修正 7、疑點 11、不一致（未修正）1，合計 72。
 
 ---
 
@@ -199,7 +207,7 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 - 尿量「0.5–1.0 Reduced」「>1.0 Normal」分層
 - Killip 30 天死亡率區間，以及 Class I／II 的「<」寫法
 - QTc 判讀切點（>500、≥480、≤360、≤320 ms）；50 mm/s 每小格 20 ms 由紙速推得，來源文字未明寫
-- GCS 的 Rosen 10e／Tintinalli 9e 嚴重度分級（教科書無法取得）
+- GCS 的 Rosen 10e／Tintinalli 9e 嚴重度分級：這次的雲端工作環境沒有先前用過的 Tintinalli 網站或本機教科書檔，無法核對。頁面 `sources` 欄位引用的 `Tintinalli/…/chapter.md` 是作者本機的檔案，不在 repo 裡
 - MEWS 原始 Subbe 2001 表格（付費牆）
 - Modified Denver 篩檢條件的原始文獻（只核對到 MDCalc）
 - Acetaminophen NAC 的高醫院內流程（2021/12/09），以及 Encore 300 mg/3 mL 規格
@@ -212,8 +220,8 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 
 ## 6. 限制
 
-- 文獻查證由 AI 代理執行，引用的原文片段來自當次實際讀到的網頁、摘要或 PDF。部分 MDCalc 頁面是用摘要式工具讀取，引文可能是轉述而非逐字；Rockall 1996 的 PDF 是掃描檔，表格數字經 OCR。**重要項目請以原文為準再確認一次**，尤其是第 2 節的六項。
+- 文獻查證由 AI 代理執行，引用的原文片段來自當次實際讀到的網頁、摘要或 PDF。部分 MDCalc 頁面是用摘要式工具讀取，引文可能是轉述而非逐字；Rockall 1996 的 PDF 是掃描檔，表格數字經 OCR。第 2.1 節的 8 項修正，修改前已親自重讀原文（JAMA 全文、AASLD PDF、RCP PDF、PubMed 摘要、AAFP 指引摘要）。其中 BRUE 只讀到 AAFP 的指引摘要，AAP 全文被網站拒絕存取；Canadian CT Head 的危險機轉定義是由 MDCalc、Wikipedia（引 Stiell 2005）、WikEM 三方一致確認，Lancet 全文沒有讀到。**上線前仍建議以原文再確認一次。**
 - 「C 類」範例是依查證過的定義建構的病例，不是論文印出來的病例；它驗證的是「頁面照文獻定義計算」，不代表該病例在原研究中的結果。
-- 測試鎖定頁面**目前**的輸出文字。之後若 Kiwi 決定修改判讀文字或切點，相關測試也要跟著改；第 2 節的 `todo` 測試改完後會自動變成通過，屆時把 `todo` 拿掉即可。
+- 測試鎖定頁面**目前**的輸出文字。之後若 Kiwi 決定修改判讀文字或切點，相關測試也要跟著改；第 2.2 節 NAC 的 `todo` 測試，若決定加上劑量上限，改完後會變成通過，屆時把 `todo` 拿掉即可；若確認院內刻意不設上限，請改寫該測試。
 - harness 是極簡 DOM，只實作頁面用到的功能（選擇器子集、radio 互斥、input／change 事件、inline onclick）。已用真 Chromium 抽樣 20 個情境比對全部一致，但不保證涵蓋所有瀏覽器行為（例如版面、CSS）。
 - 沒有測試回饋視窗（第二段 `<script>`，會送 Google 表單），因為與計算無關，且測試時不應對外送資料。

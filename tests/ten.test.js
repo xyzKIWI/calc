@@ -249,12 +249,7 @@ describe('abcd2-score-tia｜ABCD²', () => {
     assert.equal(run([1, 1, 0, 2, 1]).value, '7');
   });
 
-  test('現況紀錄：4–7 分時判讀欄為空白', () => {
-    assert.equal(run([1, 1, 0, 0, 0]).interpretation, ''); // 4 分
-    assert.equal(run([1, 1, 0, 2, 1]).interpretation, ''); // 7 分
-  });
-
-  test('與文獻不一致：4–5 分應為 moderate（2 日 4.1%）', { todo: '見 TEST_REPORT.md：ABCD² 缺 4–5、6–7 分層' }, () => {
+  test('文獻：4–5 分 moderate（2 日 4.1%）（2026-10-25 補上分層）', () => {
     // 出處：Johnston SC, et al. Lancet 2007;369:283-292 摘要（PMID 17258668）：
     // 「2169 (45%) as moderate risk (score 4-5, 4.1%)」。病例：年齡 ≥60＋血壓 ≥140/90＋單側無力 = 4。
     const o = run([1, 1, 0, 0, 0]);
@@ -262,7 +257,14 @@ describe('abcd2-score-tia｜ABCD²', () => {
     assert.match(o.interpretation, /4\.1%/);
   });
 
-  test('與文獻不一致：6–7 分應為 high（2 日 8.1%）', { todo: '見 TEST_REPORT.md：ABCD² 缺 4–5、6–7 分層' }, () => {
+  test('分層切點：3｜4、5｜6', () => {
+    assert.match(run([1, 0, 1, 1, 0]).interpretation, /^0–3 分/); // 3
+    assert.match(run([1, 1, 0, 0, 0]).interpretation, /^4–5 分：中度風險；2 日中風風險 4\.1%/); // 4
+    assert.match(run([1, 1, 0, 1, 0]).interpretation, /^4–5 分/); // 5
+    assert.match(run([1, 1, 0, 2, 0]).interpretation, /^6–7 分：高風險；2 日中風風險 8\.1%/); // 6
+  });
+
+  test('文獻：6–7 分 high（2 日 8.1%）（2026-10-25 補上分層）', () => {
     // 出處：同上摘要：「1012 (21%) of patients were classified as high risk (score 6-7, 8.1% 2-day risk)」。
     const o = run([1, 1, 0, 2, 1]);
     assert.equal(o.value, '7');

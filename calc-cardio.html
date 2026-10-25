@@ -36,7 +36,7 @@ function scoreInterpretation(s,score,maxItem,answers){
  if(s==='heads-ed')return score>=8||answers[4]===2?'HEADS-ED：總分 ≥8 或自殺項＝2 → 達專科 mental-health assessment 轉介門檻。':'HEADS-ED：未達轉介門檻（總分 ≥8 或自殺項＝2）。';
  if(s==='hear-score')return score<2?'Low':'Not low';
  if(s==='modified-early-warning-score-mews-clinical-deterioration')return score>=5?'Score ≥5: increased likelihood of death or ICU admission.':maxItem===3?'任一單項＝3：紅旗；consider higher level of care for patient.':'Score <5 and no single physiological parameter scored +3.';
- if(s==='national-early-warning-score-news'){if(score>=7)return 'High score (NEWS ≥7).';if(score>=5||maxItem===3)return maxItem===3?'Medium RED score；紅旗分層。':'Medium score (NEWS 5–6).';return score>=1?'Low score (NEWS 1–4).':'NEWS 0 is below the specified NEWS 1–4 low-score band.'}
+ if(s==='national-early-warning-score-news'){if(score>=7)return 'High score (NEWS ≥7).';if(score>=5||maxItem===3)return maxItem===3?'Medium RED score；紅旗分層。':'Medium score (NEWS 5–6).';return score>=1?'Low score (NEWS 1–4).':'Low score (NEWS 0).'}
  if(s==='perc-rule-pulmonary-embolism')return score===0?'PERC：八項皆陰性 → 規則陰性（僅限臨床前測機率 <15% 時適用）。':'PERC：任一項陽性 → 不能以 PERC 排除 PE。';
  if(s==='pulmonary-embolism-severity-index-pesi')return score<=65?'Class I, very low risk; 30-day mortality 0–1.6%':score<=85?'Class II, low risk; 30-day mortality 1.7–3.5%':score<=105?'Class III, intermediate risk; 30-day mortality 3.2–7.1%':score<=125?'Class IV, high risk; 30-day mortality 4.0–11.4%':'Class V, very high risk; 30-day mortality 10.0–24.5%';
  if(s==='rapid-arterial-occlusion-evaluation-race-scale-stroke')return score>=5?'RACE Scale score ≥5: best predictive value; see the specification for referral wording.':'RACE Scale score <5.';
@@ -51,7 +51,7 @@ function scoreInterpretation(s,score,maxItem,answers){
  if(s==='pediatric-trauma-score-pts')return score>8?'PTS >8：原研究此組無死亡。':'PTS ≤8：分數越低死亡率越高；原文未再給切點。';
  if(s==='testicular-workup-ischemia-suspected-torsion-twist')return score<=2?'Low, no recommendation for ultrasound':score<=4?'Intermediate, ultrasound indicated':'High, surgical exploration recommended';
  if(s==='wells-criteria-dvt')return score>=2?'Probability of deep-vein thrombosis is likely.':'Probability of deep-vein thrombosis is unlikely.';
- if(s==='wells-criteria-pulmonary-embolism'){let three=score<=1?'Low Risk':score<=6?'Moderate Risk':'High Risk',two=score<=4?'PE Unlikely (with D-dimer)':'PE Likely (with CTPA)';return `Three-Tier Model: ${three}; Two Tier Model: ${two}`}
+ if(s==='wells-criteria-pulmonary-embolism'){let three=score<2?'Low Risk':score<=6?'Moderate Risk':'High Risk',two=score<=4?'PE Unlikely (with D-dimer)':'PE Likely (with CTPA)';return `Three-Tier Model: ${three}; Two Tier Model: ${two}`}
  if(s==='westley-croup-score')return score<=2?'Mild':score<=5?'Moderate':score<=11?'Severe':'Impending Respiratory Failure';
  if(s==='nih-stroke-scale-score-nihss')return score<4?'NIHSS <4：預後良好機率高（原文唯一切點）。':'NIHSS ≥4：未達原文「<4 預後良好」切點；原文未再分層。';
  if(s==='centor-score-modified-mcisaac-strep-pharyngitis'){let k=Math.max(0,Math.min(4,score)),p=[2.5,5.1,11.2,27.8,52.8][k],rec=k<=1?'neither a throat swab nor antibiotic therapy was recommended (score 0 or 1)':k<=3?'obtain a throat swab but wait for culture results before deciding about antibiotic therapy (score 2 or 3)':'penicillin (erythromycin if allergic) could be started immediately if early stage or clinically unwell (score 4)';return `GAS culture-positive ${p}% (McIsaac 1998; scores <0 counted as 0, maximum 4)；${rec}`}

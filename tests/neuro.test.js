@@ -291,9 +291,9 @@ describe('ottawa-subarachnoid-hemorrhage-sah-rule-for-headache-evaluation｜Otta
     assert.equal(page(F).score(S, Array(6).fill(0)).interpretation, '請完成所有適用性條件。');
   });
 
-  test('與原文不一致：年齡適用條件寫「≥15 歲」，原文為「older than 15 y」／「16 years or older」', { todo: '見 TEST_REPORT.md：Ottawa SAH 年齡適用條件' }, () => {
+  test('年齡適用條件為 >15 歲（≥16 歲）（2026-10-25 修正，原為 ≥15 歲）', () => {
     // 出處：Perry 2013 JAMA 規則框「For alert patients older than 15 y」；Methods「adult patients (defined as patients 16 years
-    // or older)」；Perry 2010 BMJ（PMC2966872）「We included alert patients aged ≥16」。15 歲病人在頁面上可通過適用條件。
+    // or older)」；Perry 2010 BMJ（PMC2966872）「We included alert patients aged ≥16」。
     const label = page(F).def(S).applicability.find(a => a.id === 'age15').label_en;
     assert.match(label, />15|≥16|16 years/);
   });

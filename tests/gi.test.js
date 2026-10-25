@@ -85,7 +85,8 @@ describe('west-haven-criteria｜West Haven', () => {
   test('各等級數值即等級', () => {
     for (let i = 0; i <= 4; i += 1) assert.equal(run(i).value, String(i));
     assert.match(run(0).interpretation, /^Abnormal psychometric/);
-    assert.match(run(2).interpretation, /^Disoriented to time\/space/); // 措辭與 AASLD 不同，見報告
+    // AASLD/EASL 2014：Grade II「Disoriented for time」；「Disoriented also for space」屬 Grade III（2026-10-25 修正措辭）
+    assert.match(run(2).interpretation, /^Disoriented to time; /);
   });
 
   test('缺值', () => {

@@ -92,8 +92,9 @@ describe('national-early-warning-score-news｜NEWS（2012）', () => {
     assert.equal(with_({ 6: 1 }).value, '3 分');
   });
 
-  test('現況紀錄：0 分顯示「低於 1–4 分低分層」（RCP 2012 Chart 2 將 0 列為 Low，見報告）', () => {
-    assert.equal(run(normal()).interpretation, 'NEWS 0 is below the specified NEWS 1–4 low-score band.');
+  test('0 分為 Low（RCP 2012 Chart 2：「0 … Aggregate 1–4 → Low」）（2026-10-25 修正）', () => {
+    assert.equal(run(normal()).value, '0 分');
+    assert.equal(run(normal()).interpretation, 'Low score (NEWS 0).');
   });
 
   test('極端與缺值', () => {

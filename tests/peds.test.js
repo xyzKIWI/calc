@@ -97,33 +97,34 @@ describe('brief-resolved-unexplained-events-brue-criteria-infants｜BRUE 2016', 
   const run = c => page(F).tree(S, c);
   const entry = ['Yes', 'Yes', 'Yes', 'Yes'];
 
-  test('指引定義範例：符合 BRUE、<1 分鐘、>2 個月、≥32 週出生、首次、無 CPR → Lower-risk', () => {
-    // 出處：Tieder JS, et al. Pediatrics 2016;137(5):e20160590（AAP 指引）；MDCalc 4016。
-    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'Yes', 'Yes']).value, 'Lower-risk BRUE');
+  test('指引定義範例：符合 BRUE、<1 分鐘、>60 天、≥32 週出生且 PCA ≥45 週、首次、無 CPR → Lower-risk', () => {
+    // 出處：Tieder JS, et al. Pediatrics 2016;137(5):e20160590（AAP 指引；經 AAFP 摘要
+    // https://www.aafp.org/pubs/afp/issues/2017/0301/p330.html 核對：「age older than 60 days」、「birth at 32 weeks or more of
+    // gestation and corrected gestational age of at least 45 weeks」、「no cardiopulmonary resuscitation performed by a health care
+    // professional」、「the event was the first for the infant and it lasted less than one minute」）。
+    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes']).value, 'Lower-risk BRUE');
   });
 
   test('任一高風險條件 → Higher-risk；入口任一否 → Not BRUE', () => {
     assert.equal(run([...entry, 'No']).value, 'Higher-risk BRUE'); // ≥1 分鐘
-    assert.equal(run([...entry, 'Yes', 'No']).value, 'Higher-risk BRUE'); // ≤2 個月
-    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE'); // 曾有 BRUE
-    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE'); // 需 CPR
-    assert.equal(run([...entry, 'Yes', 'Yes', 'No', 'No']).value, 'Higher-risk BRUE'); // <32 週且 PCA <45 週
+    assert.equal(run([...entry, 'Yes', 'No']).value, 'Higher-risk BRUE'); // ≤60 天
+    assert.equal(run([...entry, 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE'); // <32 週出生
+    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE'); // PCA <45 週
+    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE'); // 曾有 BRUE
+    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE'); // 需 CPR
     for (let i = 0; i < 4; i += 1) {
       const c = ['Yes', 'Yes', 'Yes', 'Yes'].slice(0, i).concat('No');
       assert.equal(run(c).value, 'Not BRUE', `入口第 ${i} 題`);
     }
   });
 
-  test('現況紀錄：<32 週出生但 PCA ≥45 週 → 可為 Lower-risk（與 MDCalc 相同）', () => {
-    assert.equal(run([...entry, 'Yes', 'Yes', 'No', 'Yes', 'Yes', 'Yes']).value, 'Lower-risk BRUE');
-  });
-
-  test('與 AAP 指引不一致：≥32 週出生者未再確認 PCA ≥45 週', { todo: '見 TEST_REPORT.md：BRUE 2016 早產條件' }, () => {
-    // 出處：Tieder 2016 AAP 指引（經 AAFP 摘要 https://www.aafp.org/pubs/afp/issues/2017/0301/p330.html）：低風險需
-    // 「32 weeks or more of gestation」且「corrected gestational age of at least 45 weeks」（兩者皆須成立）。
-    // 病例：61 天大、33 週出生（PCA ≈ 41.7 週），依 AAP 應為 higher-risk；頁面在「Born at ≥32 weeks? Yes」後直接跳到「No prior BRUE」。
+  test('AAP 早產條件為「≥32 週出生且 PCA ≥45 週」（2026-10-25 修正，原為「或」）', () => {
+    // 病例：61 天大、33 週出生（PCA ≈ 41.7 週）：≥32 週出生 → 接著問 PCA ≥45 週 → 否 → Higher-risk。
     const o = run([...entry, 'Yes', 'Yes', 'Yes']);
     assert.match(o.question, /45 weeks/);
+    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE');
+    // <32 週出生，不論 PCA 都不符低風險
+    assert.equal(run([...entry, 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE');
   });
 });
 

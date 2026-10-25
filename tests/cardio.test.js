@@ -357,16 +357,12 @@ describe('wells-criteria-pulmonary-embolism｜Wells PE', () => {
     assert.match(run([1, 0, 1, 0, 0, 0, 0]).interpretation, /Two Tier Model: PE Likely/); // 4.5
   });
 
-  test('與文獻不一致：1.5 分（單一 1.5 分項目）應為三層 Low', { todo: '見 TEST_REPORT.md：Wells PE 三層模型 1.5 分' }, () => {
+  test('文獻定義：1.5 分（單一 1.5 分項目）為三層 Low（2026-10-25 修正，原為 Moderate）', () => {
     // 出處：Wells 2000（同上）低機率定義為 <2.0；MDCalc 115：「low risk (<2 points: 1.3% incidence PE)」。
-    // 病例：僅 HR >100（1.5 分）。頁面目前以 score <= 1 判 Low，1.5 分顯示 Moderate Risk。
+    // 病例：僅 HR >100（1.5 分）。
     const o = run([0, 0, 1, 0, 0, 0, 0]);
     assert.equal(o.value, '1.5 分');
     assert.match(o.interpretation, /^Three-Tier Model: Low Risk; Two Tier Model: PE Unlikely/);
-  });
-
-  test('現況紀錄：1.5 分目前顯示 Moderate', () => {
-    assert.match(run([0, 0, 1, 0, 0, 0, 0]).interpretation, /^Three-Tier Model: Moderate Risk/);
   });
 
   test('三層切點：1｜2、6｜6.5', () => {
