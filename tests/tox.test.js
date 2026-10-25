@@ -117,9 +117,11 @@ describe('acetaminophen-overdose-nac-dosing｜Acetaminophen NAC 兩袋法', () =
   const DBL = 'Double dose acetylcysteine infusion';
   const run = (regimen, w) => page(F).form(S, { regimen, weight: String(w) });
 
-  test('公開文獻範例：70 kg 標準兩袋 → 14000 mg / 7000 mg', () => {
-    // 出處：Wong A, Graudins A. Clin Toxicol 2016;54:115-119（「200 mg/kg over 4 h followed by 100 mg/kg over 16 h」）；
-    // Chiew AL, et al. Med J Aust 2020;212:175-183 Box 7。院內流程（高醫 2021/12/09）本身無法查核。
+  test('院內流程範例：70 kg 標準兩袋 → 14000 mg / 7000 mg（速算支數 2/3 × kg、1/3 × kg）', () => {
+    // 出處：高醫「Acetaminophen(乙醯胺酚)中毒處理原則」2021/12/09 版（Kiwi 提供 PDF）：
+    // 「Standard acetylcysteine infusion 第一袋: 200mg/kg in D5W or N/S 500ml IVD over 4 hours；第二袋: 100mg/kg in D5W or N/S
+    // 1000ml IVD over 16 hours；速算支數:第一袋=2/3Kg; 第二袋=1/3Kg」（Encore 300mg/3ml/amp）。
+    // 公開文獻同義：Wong A, Graudins A. Clin Toxicol 2016;54:115-119；Chiew AL, et al. Med J Aust 2020;212:175-183。
     const o = run(STD, 70);
     assert.equal(o.value, '第一袋 14000 mg（Encore 300 mg/3 mL ≈ 46.7 支）in D5W/NS 500 mL IVD over 4 h；第二袋 7000 mg（≈ 23.3 支）in D5W/NS 1000 mL IVD over 16 h');
     assert.match(o.interpretation, /GPT>50 U\/L 或 Acetaminophen>10 μg\/mL → 續 12 h/);
@@ -133,9 +135,17 @@ describe('acetaminophen-overdose-nac-dosing｜Acetaminophen NAC 兩袋法', () =
     assert.match(run(STD, 110).value, /^第一袋 22000 mg.*第二袋 11000 mg/);
   });
 
-  test('與 ANZ 指引不一致：體重 >110 kg 時無 22 g／11 g 上限', { todo: '見 TEST_REPORT.md：NAC 無劑量上限（院內流程可能有意不同）' }, () => {
-    // 出處：Chiew 2020 Box 7：「acetylcysteine 200 mg/kg (maximum 22 g)」、「100 mg/kg (maximum 11 g)」，成人體重上限 110 kg。
-    assert.match(run(STD, 150).value, /^第一袋 22000 mg.*第二袋 11000 mg/);
+  test('依院內流程不設劑量上限：150 kg → 30000 mg / 15000 mg', () => {
+    // 院內流程未載明體重或劑量上限（Kiwi 確認依院內流程）；卡片的適用限制已提醒「澳紐指引以 110 kg 計算上限，超重病人請依
+    // 藥局／毒物科意見」。對照：Chiew 2020 Box 7「200 mg/kg (maximum 22 g)」、「100 mg/kg (maximum 11 g)」。
+    assert.match(run(STD, 150).value, /^第一袋 30000 mg（Encore 300 mg\/3 mL ≈ 100\.0 支）.*第二袋 15000 mg（≈ 50\.0 支）/);
+  });
+
+  test('續用與停藥條件文字與院內流程一致', () => {
+    const o = run(STD, 70).interpretation;
+    assert.match(o, /結束前 2 h re-check GPT＋Acetaminophen level＋PT/);
+    assert.match(o, /GPT>50 U\/L 或 Acetaminophen>10 μg\/mL → 續 12 h 再 re-check/);
+    assert.match(o, /停藥須四條件皆符合：GPT 下降、INR<2\.0、Acetaminophen<10 μg\/mL、病人無症狀/);
   });
 
   test('缺值與範圍外輸入', () => {

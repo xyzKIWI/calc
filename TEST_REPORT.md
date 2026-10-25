@@ -2,7 +2,7 @@
 
 - 產出日期：2026-10-25
 - 範圍：公開版 9 頁、**72 個**計算機（README：作者本機完整版 73 個，FLACC 因授權未收錄，本 repo 沒有 FLACC，故無從測試）
-- 結果：`node --test tests/*.test.js` → **285 個測試，284 通過、0 失敗、1 個 `todo`**（`todo` 是 NAC 劑量上限，見第 2.3 節）
+- 結果：`node --test tests/*.test.js` → **286 個測試，全部通過，0 個 `todo`**
 - **修正紀錄**：第一輪只補測試、不改頁面。經 Kiwi 同意後分兩批修正：第一批 8 項（第 2.1 節），第二批 11 項（第 2.2 節），每一項修改前都重讀過原文。原文無法確認、來源互相矛盾，或屬院內決策的，維持原樣，評估寫在第 3 節。
 
 > 頁面是由作者本機的規格檔與產生器生成的。第 2.1、2.2 節的修正**必須同步改回本機規格檔**，否則下次重新產生頁面時會被蓋掉。屆時這些測試會失敗，正好當作提醒。
@@ -76,13 +76,25 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 
 頁尾的「資料校對」日期（2026-08-22）沒有改，請在同步規格檔時一併更新。
 
-### 2.3 未修正（測試仍為 `todo`）
+### 2.3 Acetaminophen NAC：依院內流程核對，計算不修改
 
-| 計算機 | 輸入 | 公開指引 | 頁面 | 未修正的原因 |
-|---|---|---|---|---|
-| Acetaminophen NAC 兩袋法 | 體重 150 kg，標準兩袋 | 第一袋上限 22 g、第二袋上限 11 g（成人上限體重 110 kg）——Chiew AL, et al. Med J Aust 2020;212:175-183 Box 7 | 第一袋 30000 mg、第二袋 15000 mg（無上限） | 頁面依高醫院內流程（2021/12/09），等 Kiwi 提供院內資料後再決定 |
+Kiwi 提供高醫「Acetaminophen(乙醯胺酚)中毒處理原則」2021/12/09 版 PDF，逐項核對：
 
-同一張卡片另有兩點，也一併等院內資料：兒童稀釋液固定 500／1000 mL（Chiew 2020 為 7 mL/kg 上限 500 mL、14 mL/kg 上限 1000 mL）；續用門檻頁面為「Acetaminophen >10 μg/mL」，Chiew 為「≥10 mg/L」。另外，頁面引用的 Rumack 1981 是口服方案，不是兩袋法的出處。
+| 項目 | 院內流程 | 頁面 | 結果 |
+|---|---|---|---|
+| Standard | 第一袋 200 mg/kg in D5W or N/S 500 mL over 4 h；第二袋 100 mg/kg in 1000 mL over 16 h | 相同 | 一致 |
+| Double dose | 第二袋 200 mg/kg in 1000 mL over 16 h；適用 Acetaminophen >300 μg/mL 或 double nomogram line 以上 | 相同（適用條件寫在卡片說明） | 一致 |
+| 速算支數 | Encore 300 mg/3 mL；第一袋＝2/3 × kg、第二袋＝1/3 × kg | 劑量 ÷ 300 mg | 一致 |
+| 續用 | 結束前 2 h re-check；GPT >50 U/L 或 Acetaminophen >10 μg/mL → 續 12 h | 相同 | 一致 |
+| 停藥 | GPT 下降、INR <2.0、Acetaminophen <10 μg/mL、病人無症狀，4 個條件都要符合 | 相同 | 一致 |
+| 劑量／體重上限 | 未載明 | 無上限；卡片已提醒「澳紐指引以 110 kg 計算上限，超重病人請依藥局／毒物科意見」 | 一致 |
+| 兒童稀釋液 | 固定 500／1000 mL | 相同 | 一致 |
+
+原本的 `todo` 測試（150 kg 應封頂 22 g／11 g）改為「依院內流程不設上限」的一般測試，另新增續用／停藥文字的測試。
+
+唯一修改的是卡片引用：原本引用 Rumack 1981（口服 72 小時方案），改為院內流程所列的參考文獻 Chiew AL, et al. Med J Aust 2020;212(4):175-183（澳紐指引）。
+
+供參考（不影響頁面）：院內流程所引用的澳紐指引本身有 22 g／11 g 上限，兒童稀釋液為 7 mL/kg（上限 500 mL）、14 mL/kg（上限 1000 mL）；院內流程沒有採用這兩點。
 
 ---
 
@@ -92,7 +104,7 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 |---|---|---|---|
 | MEWS | 心率剛好 40 次／分沒有對應選項（<40 與 41–50 之間） | 多數轉載（MDCalc、ScienceDirect、MDApp 等）都是「<40／41–50」，看起來原版就有這個空隙；Subbe 2001 原始表格在付費牆後。有少數計算機改寫為「≤40」，但沒有原文依據 | 不改。遇到心率剛好 40 時由醫師判斷選哪一格 |
 | NIHSS | 「<4 預後良好」或「≤4」 | MDCalc 兩種寫法都有，NIH 表單本身沒有判讀切點，找不到原始出處決定 | 不改 |
-| Killip | Class I／II 寫「<6%」「<17%」；Class IV 寫「30-day mortality 81%」 | 次級來源（引 Killip 1967）81% 是**院內**死亡率；MDCalc 頁面沒有任何死亡率數字；1967 原文無法取得 | 不改；建議 Kiwi 確認這些數字的出處。目前 Class IV 的「30-day」標示很可能有誤 |
+| Killip | Class I／II 寫「<6%」「<17%」；Class IV 寫「30-day mortality 81%」 | 次級來源（引 Killip 1967）81% 是**院內**死亡率；MDCalc 頁面沒有任何死亡率數字；1967 原文無法取得 | Kiwi 確認不處理，維持原樣 |
 | Pittsburgh Knee | 機轉不是鈍傷／跌倒時顯示「Cannot be applied」 | MDCalc 說「不符規則者不需 X 光」；Seaberg 1998 提到規則有適用步驟，但全文未見 | 不改 |
 | Modified Denver | 少了 MDCalc 的前提「High-energy transfer mechanism with:」 | 只有 MDCalc 可核對，原始文獻沒有列出篩檢條件 | 不改 |
 | CIWA-Ar | ≤8／9–19／≥20 三層 | 與 MDCalc 相同；量表原文只說「<10 通常不需額外藥物」，沒有分層 | 不改 |
@@ -125,7 +137,7 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 - **D**＝只依公式定義手算（公式本身已查證）
 - 「未找到」＝判讀切點或數字找不到可驗證來源
 
-狀態：**通過**＝頁面與查到的來源一致；**已修正**＝第 2 節；**不一致**＝第 2.3 節，未改；**疑點**＝第 3 節，評估後不改。
+狀態：**通過**＝頁面與查到的來源一致；**已修正**＝第 2 節；**疑點**＝第 3 節，評估後不改。
 
 | 頁 | 計算機 | 狀態 | 範例類型與出處 |
 |---|---|---|---|
@@ -195,14 +207,14 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 | 中毒 | CIWA-Ar | 疑點 | C：MDCalc 1736 分層（Sullivan 1989 原文無分層） |
 | 中毒 | C-SSRS | 通過 | C：MDCalc 10169 急診篩檢版分級表 |
 | 中毒 | HEADS-ED | 通過 | C：MDCalc 10463（≥8 或自殺項＝2） |
-| 中毒 | Acetaminophen NAC | **不一致**（相對公開指引，未修正） | C：Wong 2016、Chiew 2020；院內流程**未找到可驗證範例** |
+| 中毒 | Acetaminophen NAC | 通過（依院內流程；引用已修正） | A：高醫院內流程 2021/12/09（含速算支數）；Wong 2016、Chiew 2020 |
 | 腸胃 | Rockall（完整） | 通過（原文自相矛盾，不改） | B：Rockall 1996 Table IV(B) |
 | 腸胃 | Rockall（內視鏡前） | 通過（原文自相矛盾，不改） | B：Rockall 1996 Table IV(A) |
 | 腸胃 | West Haven | **已修正**（第 2 級措辭） | C：AASLD/EASL 2014 指引表 |
 | 腸胃 | Burch-Wartofsky | 通過 | C：MDCalc 3816（1993 原文未能取得原文） |
 | 腸胃 | TWIST | 通過 | C：Barbosa 2013 摘要（切點 2／5） |
 
-統計：通過 49、已修正 16、疑點（評估後不改）6、不一致（未修正）1，合計 72。
+統計：通過 50、已修正 16、疑點（評估後不改）6，合計 72。
 
 ---
 
@@ -215,7 +227,6 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 - GCS 的 Rosen 10e 嚴重度分級（Tintinalli 9e 分級已經由筆記站核對）
 - MEWS 原始 Subbe 2001 表格（付費牆）
 - Modified Denver 篩檢條件的原始文獻（只核對到 MDCalc）
-- Acetaminophen NAC 的高醫院內流程（2021/12/09），以及 Encore 300 mg/3 mL 規格
 - HEAVEN 各項定義中的數字（≤93%、≤8 歲）只在 MDCalc 找到
 - sPESI「1.5% 復發性血栓栓塞或非致命性出血」只在 MDCalc 找到
 - 只能用次級來源核對：CHA₂DS₂-VASc 的 Friberg 2012 風險表、TIMI STEMI 1–8 分死亡率、ICH Score 1–4 分死亡率、PECARN 腹部各節點百分比、PECARN 頸椎的 187、217 兩個分子、KDIGO 2012 尿量分期（多個轉載一致，原 PDF 未直接讀取）
@@ -229,6 +240,6 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 - 第 2 節的 19 項修正，修改前都重讀過原文：JAMA 2013 全文、AASLD PDF、RCP PDF、AAP 2016 執行摘要 PDF、Stiell 2003 NEJM PDF、CMAJ 2010 規則卡圖、Global ARDS 定義全文，以及 PubMed 摘要。KDIGO 分期是經多個轉載交叉確認，沒有直接讀 KDIGO 原 PDF。**上線前仍建議以原文再確認一次。**
 - Tintinalli 筆記站是 Kiwi 自己整理的 Tintinalli 9e 摘要，屬於次級資料，不等同教科書原文。
 - 「C 類」範例是依查證過的定義建構的病例，不是論文印出來的病例；它驗證的是「頁面照文獻定義計算」，不代表該病例在原研究中的結果。
-- 測試鎖定頁面**目前**的輸出文字。之後若 Kiwi 決定修改判讀文字或切點，相關測試也要跟著改；第 2.3 節 NAC 的 `todo` 測試，若決定加上劑量上限，改完後會變成通過，屆時把 `todo` 拿掉即可；若確認院內刻意不設上限，請改寫該測試。
+- 測試鎖定頁面**目前**的輸出文字。之後若 Kiwi 決定修改判讀文字、切點或院內流程，相關測試也要跟著改。
 - harness 是極簡 DOM，只實作頁面用到的功能（選擇器子集、radio 互斥、input／change 事件、inline onclick）。已用真 Chromium 抽樣比對全部一致，但不保證涵蓋所有瀏覽器行為（例如版面、CSS）。
 - 沒有測試回饋視窗（第二段 `<script>`，會送 Google 表單），因為與計算無關，且測試時不應對外送資料。
