@@ -102,7 +102,11 @@ describe('brief-resolved-unexplained-events-brue-criteria-infants｜BRUE 2016', 
     // https://www.aafp.org/pubs/afp/issues/2017/0301/p330.html 核對：「age older than 60 days」、「birth at 32 weeks or more of
     // gestation and corrected gestational age of at least 45 weeks」、「no cardiopulmonary resuscitation performed by a health care
     // professional」、「the event was the first for the infant and it lasted less than one minute」）。
-    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes']).value, 'Lower-risk BRUE');
+    // AAP 原文（Pediatrics 2016;137(5):e20160591 執行摘要）共 7 條：「(1) age >60 days; (2) gestational age ≥32 weeks and
+    // postconceptional age ≥45 weeks; (3) occurrence of only 1 BRUE (no prior BRUE ever and not occurring in clusters); (4) duration of
+    // BRUE <1 minute; (5) no cardiopulmonary resuscitation by trained medical provider required; (6) no concerning historical features;
+    // and (7) no concerning physical examination findings」。
+    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes']).value, 'Lower-risk BRUE');
   });
 
   test('任一高風險條件 → Higher-risk；入口任一否 → Not BRUE', () => {
@@ -112,6 +116,7 @@ describe('brief-resolved-unexplained-events-brue-criteria-infants｜BRUE 2016', 
     assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE'); // PCA <45 週
     assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE'); // 曾有 BRUE
     assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE'); // 需 CPR
+    assert.equal(run([...entry, 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No']).value, 'Higher-risk BRUE'); // 有令人擔心的病史或理學檢查（2026-10-25 新增）
     for (let i = 0; i < 4; i += 1) {
       const c = ['Yes', 'Yes', 'Yes', 'Yes'].slice(0, i).concat('No');
       assert.equal(run(c).value, 'Not BRUE', `入口第 ${i} 題`);

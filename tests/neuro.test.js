@@ -288,6 +288,8 @@ describe('ottawa-subarachnoid-hemorrhage-sah-rule-for-headache-evaluation｜Otta
     assert.equal(run(Array(6).fill(0), { neuro_deficit: 'Yes' }).interpretation, '本規則不適用於此病人，請依臨床判斷。');
     assert.equal(run(Array(6).fill(0), { prior_aneurysm: 'Yes' }).interpretation, '本規則不適用於此病人，請依臨床判斷。');
     assert.equal(run(Array(6).fill(0), { age15: 'No' }).interpretation, '本規則不適用於此病人，請依臨床判斷。');
+    // 2026-10-25 新增：Perry 2013 JAMA 規則框「For alert patients older than 15 y …」
+    assert.equal(run(Array(6).fill(0), { alert: 'No' }).interpretation, '本規則不適用於此病人，請依臨床判斷。');
     assert.equal(page(F).score(S, Array(6).fill(0)).interpretation, '請完成所有適用性條件。');
   });
 

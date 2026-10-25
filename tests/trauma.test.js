@@ -104,17 +104,17 @@ describe('rule-nines｜九則法', () => {
   test('文獻定義範例：頭 9＋軀幹前 18＋右手 4.5 → 31.5', () => {
     // 出處：Moore RA, et al. Rule of Nines. StatPearls（PMID 30020659）各區百分比；依定義建構病例。
     const o = run([2, 2, 0, 1, 0, 0, 0, 0]);
-    assert.equal(o.value, '31.5 分');
+    assert.equal(o.value, '31.5%');
     assert.equal(o.interpretation, NO_STRAT);
   });
 
   test('全身合計 100%', () => {
-    assert.equal(run([2, 2, 2, 2, 2, 1, 2, 2]).value, '100 分');
-    assert.equal(run([0, 0, 0, 0, 0, 0, 0, 0]).value, '0 分');
+    assert.equal(run([2, 2, 2, 2, 2, 1, 2, 2]).value, '100%');
+    assert.equal(run([0, 0, 0, 0, 0, 0, 0, 0]).value, '0%');
   });
 
-  test('現況紀錄：結果單位顯示為「分」而非「%」', () => {
-    assert.match(run([0, 0, 0, 0, 0, 1, 0, 0]).value, /^1 分$/);
+  test('結果單位顯示為 %TBSA（2026-10-25 修正，原為「分」）', () => {
+    assert.equal(run([0, 0, 0, 0, 0, 1, 0, 0]).value, '1%');
   });
 
   test('缺值', () => {
@@ -178,20 +178,27 @@ describe('canadian-c-spine-rule｜Canadian C-Spine', () => {
   const run = choices => page(F).tree(S, choices);
 
   test('文獻定義範例：70 歲（高風險因子）→ Radiography', () => {
-    // 出處：Stiell IG, et al. JAMA 2001;286:1841-1848（摘要：三題結構；age ≥65 為高風險因子）。
-    assert.equal(run(['Yes — GCS 15 and stable', 'Yes']).value, 'Radiography');
+    // 出處：Stiell IG, et al. JAMA 2001;286:1841-1848（摘要：三題結構；age ≥65 為高風險因子）；
+    // Stiell IG, et al. N Engl J Med 2003;349:2510-2518 Figure 1（適用於 alert、stable；納入 ≥16 歲；
+    // 「A dangerous mechanism is considered to be a fall from an elevation ≥3 ft or 5 stairs」）。
+    assert.equal(run(['Yes — age ≥16, GCS 15 and stable', 'Yes']).value, 'Radiography');
   });
 
   test('各分支', () => {
-    assert.equal(run(['Yes — GCS 15 and stable', 'No', 'No']).value, 'Radiography'); // 無低風險因子
-    assert.equal(run(['Yes — GCS 15 and stable', 'No', 'Yes', 'Unable']).value, 'Radiography');
-    assert.equal(run(['Yes — GCS 15 and stable', 'No', 'Yes', 'Able']).value, 'No Radiography');
+    assert.equal(run(['Yes — age ≥16, GCS 15 and stable', 'No', 'No']).value, 'Radiography'); // 無低風險因子
+    assert.equal(run(['Yes — age ≥16, GCS 15 and stable', 'No', 'Yes', 'Unable']).value, 'Radiography');
+    assert.equal(run(['Yes — age ≥16, GCS 15 and stable', 'No', 'Yes', 'Able']).value, 'No Radiography');
   });
 
-  test('不適用：非清醒或不穩定 → 不輸出否定性建議', () => {
-    const o = run(['No — not alert or unstable']);
+  test('不適用：<16 歲、非清醒或不穩定 → 不輸出否定性建議（2026-10-25 適用條件加入年齡）', () => {
+    const o = run(['No — age <16, not alert, or unstable']);
     assert.equal(o.value, 'Rule not applicable');
-    assert.match(o.interpretation, /requires an alert \(GCS=15\), stable trauma patient/);
+    assert.match(o.interpretation, /requires an alert \(GCS=15\), stable trauma patient aged ≥16 years/);
+    assert.match(run([]).question, /^Applicability: Age ≥16 years, alert/);
+  });
+
+  test('危險機轉跌落高度為 ≥3 ft（0.9 m）或 5 階（2026-10-25 修正，原為 ≥1 m）', () => {
+    assert.match(run(['Yes — age ≥16, GCS 15 and stable']).question, /Fall From Elevation ≥3 ft \(0\.9 m\) or 5 Stairs/);
   });
 });
 
@@ -221,10 +228,10 @@ describe('canadian-ct-head-injury-trauma-rule｜Canadian CT Head', () => {
   });
 
   test('「危險機轉」題目含 pedestrian struck／occupant ejected（2026-10-25 修正）', () => {
-    // 出處：MDCalc 608：「"Dangerous" mechanism? Pedestrian struck by motor vehicle, occupant ejected from motor vehicle,
-    // or fall from >3 feet or >5 stairs.」；Stiell 2005（經 Wikipedia 轉引）同義。
+    // 出處：Stiell IG, et al. CMAJ 2010;182:1527-1532 Figure 1（作者研究所用的規則卡）：「** Dangerous Mechanism: pedestrian struck
+    // by motor vehicle; occupant ejected from motor vehicle; fall from elevation ≥ 3 feet or 5 stairs」。
     const o = run([...enter, 'No', 'No', 'No', 'No', 'No', 'No']);
-    assert.match(o.question, /Pedestrian struck by motor vehicle, occupant ejected from motor vehicle/);
+    assert.match(o.question, /Pedestrian struck by motor vehicle, occupant ejected from motor vehicle, or fall from elevation ≥3 feet or 5 stairs/);
   });
 
   test('文獻病例：Mower 2017 Box 3 Patient 1（16.5 歲行人被車撞、短暫 LOC、GCS 15）→ Consider CT', () => {
@@ -232,7 +239,14 @@ describe('canadian-ct-head-injury-trauma-rule｜Canadian CT Head', () => {
     assert.equal(run([...enter, 'No', 'No', 'No', 'No', 'No', 'No', 'Yes']).value, 'Consider obtaining a CT scan');
   });
 
+  test('失憶門檻為 ≥30 分鐘（與 CMAJ 2010 規則卡「Amnesia before impact ≥ 30 minutes」一致，未修改）', () => {
+    assert.match(run([...enter, 'No', 'No', 'No', 'No', 'No']).question, /≥ 30 minutes/);
+  });
+
   test('適用條件含 GCS 13–15 與 witnessed disorientation（2026-10-25 修正）', () => {
+    // 出處：Stiell 2005 JAMA 摘要（PMID 16189364）：「blunt head trauma resulting in witnessed loss of consciousness, disorientation,
+    // or definite amnesia and a GCS score of 13 to 15」；CMAJ 2010 Figure 1：「GCS score of 13-15 after witnessed loss of
+    // consciousness, amnesia, or confusion」。
     // 出處：MDCalc 608：「Apply only to patients presenting within 24 hours of injury with a … GCS score of 13-15 and at least one
     // of the following: Loss of consciousness. Amnesia to the head injury event. Witnessed disorientation.」
     const o = run([]);
@@ -292,6 +306,9 @@ describe('new-orleans-charity-head-trauma-injury-rule｜New Orleans', () => {
     assert.equal(run(Array(7).fill(0), { gcs15: 'No' }).interpretation, NOT_APPLICABLE);
     assert.equal(run(Array(7).fill(0), { adult: 'No' }).interpretation, NOT_APPLICABLE);
     assert.equal(run(Array(7).fill(0), { antithrombotic: 'Yes' }).interpretation, NOT_APPLICABLE);
+    // 2026-10-25 新增：Haydel 2000「normal findings on a brief neurologic examination」、「presented within 24 hours after the injury」
+    assert.equal(run(Array(7).fill(0), { normal_neuro: 'No' }).interpretation, NOT_APPLICABLE);
+    assert.equal(run(Array(7).fill(0), { within24h: 'No' }).interpretation, NOT_APPLICABLE);
     assert.equal(page(F).score(S, Array(7).fill(0)).interpretation, '請完成所有適用性條件。');
   });
 
@@ -307,7 +324,7 @@ describe('nexus-chest-ct-decision-instrument-ct-imaging｜NEXUS Chest CT', () =>
   test('文獻定義：Chest CT-All 四類皆無 → 不需 CT', () => {
     // 出處：Rodriguez RM, et al. PLoS Med 2015;12(10):e1001883（PMC4595216）；胸壁／胸骨／胸椎／肩胛壓痛原文允許合併評估。
     // 文中唯一漏失的重大傷害病例（80 歲、跌下七階樓梯、無任何 DI 條件）規則輸出即為陰性。
-    assert.match(run([false, false, false, false]).interpretation, /^NEXUS Chest CT：主要與次要條件皆無/);
+    assert.match(run([false, false, false, false]).interpretation, /^NEXUS Chest CT：四類條件皆無 → 規則判定不需胸部 CT（Chest CT-All）/);
   });
 
   test('任一項陽性 → 無法排除', () => {

@@ -221,11 +221,10 @@ describe('pulmonary-embolism-severity-index-pesi｜PESI', () => {
     assert.equal(cls(126), 'Class V');
   });
 
-  test('非整數年齡：65.5 歲 → 65.5 分，落在 Class II', () => {
-    // 年齡欄位允許小數；原始量表以「年」計，頁面不取整。此為現況紀錄。
-    const o = run(65.5);
-    assert.equal(o.value, '65.5 分');
-    assert.match(o.interpretation, /^Class II/);
+  test('年齡須為整數（2026-10-25 修正；原本允許 65.5 歲而落在 Class II）', () => {
+    // Aujesky 2005 Table 2：年齡以「年」計分，分級界線為整數（≤65、66–85…）。
+    assert.equal(run(65.5).interpretation, 'Age, per yr must be an integer.');
+    assert.equal(run(65).value, '65 分');
   });
 
   test('缺值與範圍外輸入', () => {

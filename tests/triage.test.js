@@ -164,20 +164,28 @@ describe('urine-output-fluid-balance｜尿量與輸入輸出', () => {
   const S = 'urine-output-fluid-balance';
   const run = (weight, urine, hours, intake) => page(F).form(S, { weight: String(weight), urine: String(urine), hours: String(hours), intake: String(intake) });
 
+  const NOTE = '（以輸入時段的平均值判讀；KDIGO 2012）';
+
   test('公式範例：70 kg、12 h 尿 420 mL、輸入 1000 mL → 0.50 mL/kg/hr、+580 mL', () => {
-    // 尿量＝尿量 / 體重 / 小時、平衡＝輸入 − 尿量（算術定義）。<0.5 切點數字與 KDIGO AKI 指引相同（KDIGO 另要求持續 ≥6 h）；
-    // 0.5–1.0「Reduced」、>1.0「Normal」兩層未找到可驗證範例。
+    // 尿量＝尿量 / 體重 / 小時、平衡＝輸入 − 尿量（算術定義）。
+    // 判讀依 KDIGO 2012 AKI 指引尿量分期（2026-10-25 修正；原本的「0.5–1.0 Reduced」「>1.0 Normal」找不到來源，且未考慮持續時間）：
+    // Stage 1 <0.5 mL/kg/h 持續 6–12 h；Stage 2 <0.5 持續 ≥12 h；Stage 3 <0.3 持續 ≥24 h 或無尿 ≥12 h。
     const o = run(70, 420, 12, 1000);
     assert.equal(o.value, '0.50 mL/kg/hr；Fluid balance +580 mL');
-    assert.equal(o.interpretation, 'Reduced urine output 0.5–1.0 mL/kg/hr');
+    assert.equal(o.interpretation, '≥0.5 mL/kg/hr: KDIGO urine-output criterion not met' + NOTE);
   });
 
-  test('切點：0.5（不含）與 1.0（含）', () => {
-    assert.equal(run(70, 419, 12, 0).interpretation, 'Adult oliguria cutoff <0.5 mL/kg/hr');
-    assert.equal(run(70, 840, 12, 0).interpretation, 'Reduced urine output 0.5–1.0 mL/kg/hr'); // 1.00
-    const o = run(70, 841, 12, 0); // 1.0012，顯示 1.00 但判讀為 >1.0
-    assert.equal(o.value, '1.00 mL/kg/hr；Fluid balance -841 mL');
-    assert.equal(o.interpretation, 'Normal output >1.0 mL/kg/hr');
+  test('KDIGO 分期：持續時間 6、12、24 小時與 0.5、0.3 mL/kg/hr', () => {
+    assert.equal(run(70, 419, 12, 0).interpretation, 'KDIGO stage 2 urine-output criterion: <0.5 mL/kg/hr for ≥12 h' + NOTE); // 0.499
+    assert.equal(run(70, 200, 6, 0).interpretation, 'KDIGO stage 1 urine-output criterion: <0.5 mL/kg/hr for 6–12 h' + NOTE); // 0.48
+    assert.equal(run(70, 200, 11.5, 0).interpretation, 'KDIGO stage 1 urine-output criterion: <0.5 mL/kg/hr for 6–12 h' + NOTE);
+    assert.equal(run(70, 200, 5.9, 0).interpretation, '<0.5 mL/kg/hr, but KDIGO requires ≥6 h of low output' + NOTE);
+    assert.equal(run(70, 500, 24, 0).interpretation, 'KDIGO stage 3 urine-output criterion: <0.3 mL/kg/hr for ≥24 h' + NOTE); // 0.298
+    assert.equal(run(70, 510, 24, 0).interpretation, 'KDIGO stage 2 urine-output criterion: <0.5 mL/kg/hr for ≥12 h' + NOTE); // 0.304
+    assert.equal(run(70, 400, 20, 0).interpretation, 'KDIGO stage 2 urine-output criterion: <0.5 mL/kg/hr for ≥12 h' + NOTE); // 0.29 但未滿 24 h
+    assert.equal(run(70, 0, 12, 0).interpretation, 'KDIGO stage 3 urine-output criterion: anuria for ≥12 h' + NOTE);
+    assert.equal(run(70, 0, 11, 0).interpretation, 'KDIGO stage 1 urine-output criterion: <0.5 mL/kg/hr for 6–12 h' + NOTE);
+    assert.equal(run(70, 840, 12, 0).interpretation, '≥0.5 mL/kg/hr: KDIGO urine-output criterion not met' + NOTE); // 1.00
   });
 
   test('負平衡與零尿量', () => {

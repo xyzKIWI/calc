@@ -60,24 +60,33 @@ describe('heaven-criteria｜HEAVEN', () => {
 describe('spo2-fio2-ratio｜S/F ratio', () => {
   const S = 'spo2-fio2-ratio';
   const run = values => page(F).form(S, Object.fromEntries(Object.entries(values).map(([k, v]) => [k, String(v)])));
+  const intubated = (spo2, fio2, peep = 5) => run({ support: 'Intubated', peep, spo2, fio2 });
 
-  test('文獻定義範例：插管 SpO₂ 94%、FiO₂ 40% → 235.0，moderate（235 為含）', () => {
+  test('文獻定義範例：插管 PEEP 5、SpO₂ 94%、FiO₂ 40% → 235.0，moderate（235 為含）', () => {
     // 出處：Matthay MA, et al. A New Global Definition of ARDS. Am J Respir Crit Care Med 2024（PMC10870872）Table 1：
-    // 插管 mild 235 < S/F ≤ 315、moderate 148 < S/F ≤ 235、severe S/F ≤ 148（SpO₂ ≤97%）。依定義建構病例。
-    const o = run({ support: 'Intubated', spo2: 94, fio2: 40 });
+    // 插管 mild 235 < S/F ≤ 315、moderate 148 < S/F ≤ 235、severe S/F ≤ 148（SpO₂ ≤97%）；
+    // 註腳：「For all severity categories of intubated ARDS, a minimum PEEP of 5 cm H2O is required.」依定義建構病例。
+    const o = intubated(94, 40);
     assert.equal(o.value, '235.0');
     assert.equal(o.interpretation, '>148 and ≤235 moderate intubated ARDS S/F threshold');
   });
 
   test('插管分級切點：148、235、315', () => {
-    assert.equal(run({ support: 'Intubated', spo2: 88, fio2: 60 }).interpretation, '≤148 severe intubated ARDS S/F threshold'); // 146.7
-    assert.equal(run({ support: 'Intubated', spo2: 74, fio2: 50 }).interpretation, '≤148 severe intubated ARDS S/F threshold'); // 148.0
-    assert.equal(run({ support: 'Intubated', spo2: 89, fio2: 60 }).interpretation, '>148 and ≤235 moderate intubated ARDS S/F threshold'); // 148.3
-    assert.equal(run({ support: 'Intubated', spo2: 95, fio2: 40 }).interpretation, '>235 and ≤315 mild intubated ARDS S/F threshold'); // 237.5
-    const mild = run({ support: 'Intubated', spo2: 63, fio2: 21 });
+    assert.equal(intubated(88, 60).interpretation, '≤148 severe intubated ARDS S/F threshold'); // 146.7
+    assert.equal(intubated(74, 50).interpretation, '≤148 severe intubated ARDS S/F threshold'); // 148.0
+    assert.equal(intubated(89, 60).interpretation, '>148 and ≤235 moderate intubated ARDS S/F threshold'); // 148.3
+    assert.equal(intubated(95, 40).interpretation, '>235 and ≤315 mild intubated ARDS S/F threshold'); // 237.5
+    const mild = intubated(63, 21);
     assert.equal(mild.value, '300.0');
     assert.equal(mild.interpretation, '>235 and ≤315 mild intubated ARDS S/F threshold');
-    assert.equal(run({ support: 'Intubated', spo2: 97, fio2: 30 }).interpretation, 'Above 315; no listed intubated ARDS S/F category'); // 323.3
+    assert.equal(intubated(97, 30).interpretation, 'Above 315; no listed intubated ARDS S/F category'); // 323.3
+  });
+
+  test('插管需 PEEP ≥5 cm H₂O 才套用分級（2026-10-25 新增 PEEP 欄位）', () => {
+    assert.equal(intubated(88, 60, 4).interpretation, 'ARDS S/F categories not applied: PEEP is below 5 cm H2O (required for intubated ARDS).');
+    assert.equal(intubated(88, 60, 4).value, '146.7');
+    assert.equal(intubated(88, 60, 5).interpretation, '≤148 severe intubated ARDS S/F threshold');
+    assert.equal(run({ support: 'Intubated', spo2: 88, fio2: 60 }).interpretation, NUM_MISSING); // 未填 PEEP
   });
 
   test('非插管前提：HFNC ≥30 L/min、NIV/CPAP ≥5 cm H₂O、SpO₂ ≤97%', () => {
@@ -86,8 +95,8 @@ describe('spo2-fio2-ratio｜S/F ratio', () => {
     assert.equal(run({ support: 'HFNC', flow: 29, spo2: 94, fio2: 30 }).interpretation, 'ARDS S/F categories not applied: HFNC flow is below 30 L/min.');
     assert.equal(run({ support: 'NIV/CPAP', pressure: 5, spo2: 94, fio2: 50 }).interpretation, '≤315 nonintubated ARDS S/F threshold');
     assert.equal(run({ support: 'NIV/CPAP', pressure: 4, spo2: 94, fio2: 50 }).interpretation, 'ARDS S/F categories not applied: end-expiratory pressure is below 5 cm H2O.');
-    assert.equal(run({ support: 'Intubated', spo2: 98, fio2: 50 }).interpretation, 'ARDS S/F categories not applied: SpO2 >97%.');
-    assert.equal(run({ support: 'Intubated', spo2: 97, fio2: 50 }).interpretation, '>148 and ≤235 moderate intubated ARDS S/F threshold'); // 194.0
+    assert.equal(intubated(98, 50).interpretation, 'ARDS S/F categories not applied: SpO2 >97%.');
+    assert.equal(intubated(97, 50).interpretation, '>148 and ≤235 moderate intubated ARDS S/F threshold'); // 194.0
     assert.equal(run({ support: 'Resource-limited setting', spo2: 90, fio2: 30 }).interpretation, '≤315 modified resource-limited ARDS S/F threshold');
     assert.equal(run({ support: 'Other', spo2: 90, fio2: 30 }).interpretation, 'ARDS S/F categories not applied: specified respiratory-support prerequisites are not met.');
   });
@@ -95,10 +104,11 @@ describe('spo2-fio2-ratio｜S/F ratio', () => {
   test('缺值與範圍外輸入', () => {
     assert.equal(run({ spo2: 90, fio2: 30 }).interpretation, INCOMPLETE);
     assert.equal(run({ support: 'HFNC', spo2: 90, fio2: 30 }).interpretation, NUM_MISSING); // 缺流量
-    assert.equal(run({ support: 'Intubated', spo2: 90 }).interpretation, NUM_MISSING);
-    assert.match(run({ support: 'Intubated', spo2: 90, fio2: 20 }).interpretation, /需介於 21–100 %/);
-    assert.match(run({ support: 'Intubated', spo2: 49, fio2: 30 }).interpretation, /需介於 50–100 %/);
-    assert.equal(run({ support: 'Intubated', spo2: 50, fio2: 100 }).value, '50.0');
+    assert.equal(run({ support: 'Intubated', peep: 5, spo2: 90 }).interpretation, NUM_MISSING);
+    assert.match(intubated(90, 20).interpretation, /需介於 21–100 %/);
+    assert.match(intubated(49, 30).interpretation, /需介於 50–100 %/);
+    assert.match(intubated(90, 30, 31).interpretation, /需介於 0–30 cm H2O/);
+    assert.equal(intubated(50, 100).value, '50.0');
   });
 });
 
@@ -137,32 +147,44 @@ describe('centor-score-modified-mcisaac-strep-pharyngitis｜Centor／McIsaac', (
 
 describe('rox-index-intubation-hfnc｜ROX', () => {
   const S = 'rox-index-intubation-hfnc';
-  const run = (spo2, fio2, rr) => page(F).form(S, { spo2: String(spo2), fio2: String(fio2), rr: String(rr) });
+  const run = (spo2, fio2, rr, hours = '12 h') => page(F).form(S, { hours, spo2: String(spo2), fio2: String(fio2), rr: String(rr) });
 
   test('文獻定義範例：SpO₂ 88%、FiO₂ 60%、RR 30 → 4.89，≥4.88 較低插管風險', () => {
-    // 出處：Roca O, et al. J Crit Care 2016;35:200-205；Am J Respir Crit Care Med 2019;199:1368-1376
-    // （≥4.88 於 2、6、12 小時皆與較低插管風險相關；<3.85 為 12 小時的失敗預測值）。依定義建構病例。
+    // 出處：Roca O, et al. Am J Respir Crit Care Med 2019;199:1368-1376 摘要（PMID 30576221）：
+    // 「ROX greater than or equal to 4.88 measured at 2 …, 6 …, or 12 hours … was consistently associated with a lower risk for
+    // intubation」、「A ROX less than 2.85, less than 3.47, and less than 3.85 at 2, 6, and 12 hours … were predictors of HFNC
+    // failure」。依定義建構病例。
     const o = run(88, 60, 30);
     assert.equal(o.value, '4.89');
-    assert.equal(o.interpretation, 'ROX Index ≥4.88: associated with lower risk for intubation');
+    assert.equal(o.interpretation, 'ROX Index ≥4.88 (at 12 h): associated with lower risk for intubation');
   });
 
-  test('切點：4.88（含）與 3.85（不含）', () => {
+  test('各時間點的失敗切點：2 h <2.85、6 h <3.47、12 h <3.85（2026-10-25 新增時間點欄位）', () => {
+    // ROX 3.60：12 h 為高風險；6 h、2 h 不是
+    assert.equal(run(90, 70, 35.7, '12 h').value, '3.60');
+    assert.equal(run(90, 70, 35.7, '12 h').interpretation, 'ROX Index <3.85 (at 12 h): high risk of HFNC failure');
+    assert.equal(run(90, 70, 35.7, '6 h').interpretation, 'ROX Index 3.47 to <4.88 (at 6 h)');
+    assert.equal(run(90, 70, 35.7, '2 h').interpretation, 'ROX Index 2.85 to <4.88 (at 2 h)');
+    // ROX 3.00：6 h、12 h 高風險；2 h 不是
+    assert.equal(run(90, 100, 30, '6 h').value, '3.00');
+    assert.equal(run(90, 100, 30, '6 h').interpretation, 'ROX Index <3.47 (at 6 h): high risk of HFNC failure');
+    assert.equal(run(90, 100, 30, '2 h').interpretation, 'ROX Index 2.85 to <4.88 (at 2 h)');
+    // ROX 2.80：三個時間點都高風險
+    assert.equal(run(84, 100, 30, '2 h').value, '2.80');
+    assert.equal(run(84, 100, 30, '2 h').interpretation, 'ROX Index <2.85 (at 2 h): high risk of HFNC failure');
+  });
+
+  test('切點：4.88（含）與 3.85（含於中間組）', () => {
     assert.equal(run(61, 25, 50).value, '4.88');
-    assert.equal(run(61, 25, 50).interpretation, 'ROX Index ≥4.88: associated with lower risk for intubation'); // 4.88 整
-    assert.equal(run(92, 60, 35).interpretation, 'ROX Index 3.85 to <4.88'); // 4.38
-    assert.equal(run(77, 25, 80).interpretation, 'ROX Index 3.85 to <4.88'); // 3.85 整
-    assert.equal(run(90, 80, 30).interpretation, 'ROX Index <3.85: high risk of HFNC failure'); // 3.75
-  });
-
-  test('現況紀錄：頁面無時間點輸入，<3.85 一律套用（Roca 2019 的 2 h／6 h 切點為 2.85／3.47，見報告）', () => {
-    const o = run(90, 70, 35.7); // 3.60：6 小時時不低於 3.47，但頁面仍判為高風險
-    assert.equal(o.value, '3.60');
-    assert.equal(o.interpretation, 'ROX Index <3.85: high risk of HFNC failure');
+    assert.equal(run(61, 25, 50, '2 h').interpretation, 'ROX Index ≥4.88 (at 2 h): associated with lower risk for intubation'); // 4.88 整
+    assert.equal(run(92, 60, 35).interpretation, 'ROX Index 3.85 to <4.88 (at 12 h)'); // 4.38
+    assert.equal(run(77, 25, 80).interpretation, 'ROX Index 3.85 to <4.88 (at 12 h)'); // 3.85 整
+    assert.equal(run(90, 80, 30).interpretation, 'ROX Index <3.85 (at 12 h): high risk of HFNC failure'); // 3.75
   });
 
   test('缺值與範圍外輸入', () => {
-    assert.equal(page(F).form(S, { spo2: '90', fio2: '40' }).interpretation, NUM_MISSING);
+    assert.equal(page(F).form(S, { spo2: '90', fio2: '40', rr: '25' }).interpretation, INCOMPLETE); // 未選時間點
+    assert.equal(page(F).form(S, { hours: '6 h', spo2: '90', fio2: '40' }).interpretation, NUM_MISSING);
     assert.match(run(90, 40, 4).interpretation, /需介於 5–80 breaths\/min/);
     assert.equal(run(100, 21, 5).value, '95.24');
   });
