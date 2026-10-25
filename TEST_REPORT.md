@@ -74,7 +74,7 @@ node --test tests/*.test.js     # 或 npm test；需要 Node 20 以上
 
 另外把 BRUE 2.0 的「Prematurity」欄位補上定義（「<32 wk, or 32–38 wk and corrected <45 wk」），與同一張卡片的公式說明一致；這不改變計算。
 
-頁尾的「資料校對」日期（2026-08-22）沒有改，請在同步規格檔時一併更新。
+頁尾與 README 的「資料校對」日期已由 2026-08-22 更新為 2026-10-25（9 個計算機頁、index.html、README）。
 
 ### 2.3 Acetaminophen NAC：依院內流程核對，計算不修改
 
