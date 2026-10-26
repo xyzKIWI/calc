@@ -164,7 +164,8 @@ describe('urine-output-fluid-balance｜尿量與輸入輸出', () => {
   const S = 'urine-output-fluid-balance';
   const run = (weight, urine, hours, intake) => page(F).form(S, { weight: String(weight), urine: String(urine), hours: String(hours), intake: String(intake) });
 
-  const NOTE = '（以輸入時段的平均值判讀；KDIGO 2012）';
+  const NOTE = '（以輸入時段的平均值判讀，無法排除其中較短時段已符合 KDIGO 標準或更高分期；KDIGO 2012）';
+  const SOURCE = 'KDIGO Acute Kidney Injury Work Group. KDIGO Clinical Practice Guideline for Acute Kidney Injury. Kidney Int Suppl. 2012;2(1):1-138.';
 
   test('公式範例：70 kg、12 h 尿 420 mL、輸入 1000 mL → 0.50 mL/kg/hr、+580 mL', () => {
     // 尿量＝尿量 / 體重 / 小時、平衡＝輸入 − 尿量（算術定義）。
@@ -172,7 +173,7 @@ describe('urine-output-fluid-balance｜尿量與輸入輸出', () => {
     // Stage 1 <0.5 mL/kg/h 持續 6–12 h；Stage 2 <0.5 持續 ≥12 h；Stage 3 <0.3 持續 ≥24 h 或無尿 ≥12 h。
     const o = run(70, 420, 12, 1000);
     assert.equal(o.value, '0.50 mL/kg/hr；Fluid balance +580 mL');
-    assert.equal(o.interpretation, '≥0.5 mL/kg/hr: KDIGO urine-output criterion not met' + NOTE);
+    assert.equal(o.interpretation, '≥0.5 mL/kg/hr: average over this period does not meet the KDIGO urine-output criterion' + NOTE);
   });
 
   test('KDIGO 分期：持續時間 6、12、24 小時與 0.5、0.3 mL/kg/hr', () => {
@@ -185,7 +186,19 @@ describe('urine-output-fluid-balance｜尿量與輸入輸出', () => {
     assert.equal(run(70, 400, 20, 0).interpretation, 'KDIGO stage 2 urine-output criterion: <0.5 mL/kg/hr for ≥12 h' + NOTE); // 0.29 但未滿 24 h
     assert.equal(run(70, 0, 12, 0).interpretation, 'KDIGO stage 3 urine-output criterion: anuria for ≥12 h' + NOTE);
     assert.equal(run(70, 0, 11, 0).interpretation, 'KDIGO stage 1 urine-output criterion: <0.5 mL/kg/hr for 6–12 h' + NOTE);
-    assert.equal(run(70, 840, 12, 0).interpretation, '≥0.5 mL/kg/hr: KDIGO urine-output criterion not met' + NOTE); // 1.00
+    assert.equal(run(70, 840, 12, 0).interpretation, '≥0.5 mL/kg/hr: average over this period does not meet the KDIGO urine-output criterion' + NOTE); // 1.00
+  });
+
+  test('長時段平均的限制：平均未達標準時，判讀不可寫成「已排除」', () => {
+    // 70 kg、24 h 共 1000 mL → 平均 0.60，但其中可能含連續 12 h 無尿（KDIGO stage 3），所以措辭只說「此時段平均未達標準」，並由 NOTE 提醒。
+    const o = run(70, 1000, 24, 0);
+    assert.equal(o.value, '0.60 mL/kg/hr；Fluid balance -1000 mL');
+    assert.equal(o.interpretation, '≥0.5 mL/kg/hr: average over this period does not meet the KDIGO urine-output criterion' + NOTE);
+  });
+
+  test('引用出處為 KDIGO 2012', () => {
+    assert.equal(page(F).card(S).querySelector('[data-role="sources"]').textContent, SOURCE);
+    assert.equal(page(F).def(S).source_citation, SOURCE);
   });
 
   test('負平衡與零尿量', () => {

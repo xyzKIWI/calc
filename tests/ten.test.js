@@ -249,6 +249,12 @@ describe('abcd2-score-tia｜ABCD²', () => {
     assert.equal(run([1, 1, 0, 2, 1]).value, '7');
   });
 
+  test('卡片說明與三層分層一致，不再寫「4–7 分只輸出數值」', () => {
+    const note = page(F).card(S).querySelector('.note').textContent;
+    assert.match(note, /Johnston 2007（0–3／4–5／6–7 分）/);
+    assert.doesNotMatch(note, /只輸出數值/);
+  });
+
   test('文獻：4–5 分 moderate（2 日 4.1%）（2026-10-25 補上分層）', () => {
     // 出處：Johnston SC, et al. Lancet 2007;369:283-292 摘要（PMID 17258668）：
     // 「2169 (45%) as moderate risk (score 4-5, 4.1%)」。病例：年齡 ≥60＋血壓 ≥140/90＋單側無力 = 4。

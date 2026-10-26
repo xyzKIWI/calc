@@ -62,6 +62,11 @@ describe('spo2-fio2-ratio｜S/F ratio', () => {
   const run = values => page(F).form(S, Object.fromEntries(Object.entries(values).map(([k, v]) => [k, String(v)])));
   const intubated = (spo2, fio2, peep = 5) => run({ support: 'Intubated', peep, spo2, fio2 });
 
+  test('引用含 Matthay 2024 全球 ARDS 定義（PEEP ≥5 與 ≤315 切點的出處）', () => {
+    assert.match(page(F).card(S).querySelector('[data-role="sources"]').textContent, /Matthay MA, Arabi Y, Arroliga AC, et al\. A new global definition of acute respiratory distress syndrome\. Am J Respir Crit Care Med\. 2024;209\(1\):37-47\./);
+    assert.match(page(F).def(S).source_citation, /2024;209\(1\):37-47/);
+  });
+
   test('文獻定義範例：插管 PEEP 5、SpO₂ 94%、FiO₂ 40% → 235.0，moderate（235 為含）', () => {
     // 出處：Matthay MA, et al. A New Global Definition of ARDS. Am J Respir Crit Care Med 2024（PMC10870872）Table 1：
     // 插管 mild 235 < S/F ≤ 315、moderate 148 < S/F ≤ 235、severe S/F ≤ 148（SpO₂ ≤97%）；
@@ -157,6 +162,11 @@ describe('rox-index-intubation-hfnc｜ROX', () => {
     const o = run(88, 60, 30);
     assert.equal(o.value, '4.89');
     assert.equal(o.interpretation, 'ROX Index ≥4.88 (at 12 h): associated with lower risk for intubation');
+  });
+
+  test('引用含 Roca 2019（時間點切點的出處）', () => {
+    assert.match(page(F).card(S).querySelector('[data-role="sources"]').textContent, /Roca O, Caralt B, Messika J, et al\. An index combining respiratory rate and oxygenation .* 2019;199\(11\):1368-1376\./);
+    assert.match(page(F).def(S).source_citation, /2019;199\(11\):1368-1376/);
   });
 
   test('各時間點的失敗切點：2 h <2.85、6 h <3.47、12 h <3.85（2026-10-25 新增時間點欄位）', () => {
