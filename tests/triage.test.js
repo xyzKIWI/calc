@@ -197,8 +197,10 @@ describe('urine-output-fluid-balance｜尿量與輸入輸出', () => {
   });
 
   test('引用出處為 KDIGO 2012', () => {
-    assert.equal(page(F).card(S).querySelector('[data-role="sources"]').textContent, SOURCE);
+    // 產生器格式：「採用來源；原始文獻」
+    assert.equal(page(F).card(S).querySelector('[data-role="sources"]').textContent, 'KDIGO 2012；' + SOURCE);
     assert.equal(page(F).def(S).source_citation, SOURCE);
+    assert.equal(page(F).card(S).querySelector('[data-role="source-count"]').textContent, '1');
   });
 
   test('負平衡與零尿量', () => {

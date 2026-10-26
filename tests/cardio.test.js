@@ -224,6 +224,7 @@ describe('pulmonary-embolism-severity-index-pesi｜PESI', () => {
   test('年齡須為整數（2026-10-25 修正；原本允許 65.5 歲而落在 Class II）', () => {
     // Aujesky 2005 Table 2：年齡以「年」計分，分級界線為整數（≤65、66–85…）。
     assert.equal(run(65.5).interpretation, 'Age, per yr must be an integer.');
+    assert.equal(page(F).card(S).querySelector('[data-input-id="age"]').getAttribute('step'), '1');
     assert.equal(run(65).value, '65 分');
   });
 
