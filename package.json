@@ -1,0 +1,11 @@
+{
+  "name": "ed-calc-tests",
+  "private": true,
+  "description": "急診臨床計算機的自動化測試（Node 內建 node:test，無相依套件）",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
