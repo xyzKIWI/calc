@@ -34,6 +34,7 @@ describe('分頁頁首與分科列', () => {
       const current = nav.querySelectorAll('a[aria-current]');
       assert.equal(current.length, 1);
       assert.equal(current[0].getAttribute('href'), file);
+      assert.ok(html.includes('https://github.com/xyzkiwi/calc#readme') && !html.includes('xyzKIWI/ed-calc'), '頁尾 README 連結需為新網址');
       // 共用介面在計算引擎之後、回饋視窗之前
       const engineEnd = html.indexOf('</script>');
       const assets = html.indexOf('<!-- ui:assets');
@@ -47,6 +48,7 @@ describe('入口頁', () => {
   const total = ui.PAGES.reduce((n, p) => n + page(p.file).defs.length, 0);
 
   test('標題與分類卡的項數等於實際計算機數', () => {
+    assert.ok(html.includes('https://github.com/xyzkiwi/calc#readme') && !html.includes('xyzKIWI/ed-calc'), 'README 連結需為新網址');
     assert.match(html, new RegExp(`<div class="sub">${total} 個`));
     assert.match(html, new RegExp(`搜尋全部 ${total} 項`));
     for (const { file, name } of ui.PAGES) {
