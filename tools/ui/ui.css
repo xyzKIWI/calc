@@ -38,7 +38,7 @@ main button{min-height:44px;font-size:15px;cursor:pointer}
 .opt input[type=radio],.option input[type=radio]{width:18px;height:18px;flex:none;accent-color:var(--ui-accent)}
 .opt:has(input:checked),.option:has(input:checked){border-color:var(--ui-accent);background:var(--ui-sel)}
 :focus-visible{outline:3px solid var(--ui-focus);outline-offset:2px}
-body>footer{padding-bottom:84px}
+body>footer{padding-bottom:84px;max-width:980px;margin-left:auto;margin-right:auto}
 .ui-top{position:fixed;left:14px;bottom:14px;z-index:98;width:46px;height:46px;border-radius:50%;background:var(--ui-accent);color:#fff;display:none;align-items:center;justify-content:center;text-decoration:none;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .ui-top.show{display:flex}
 .ui-toast{position:fixed;left:50%;bottom:76px;z-index:100;transform:translateX(-50%);max-width:calc(100vw - 32px);background:#111827;color:#fff;padding:9px 16px;border-radius:9px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}

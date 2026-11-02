@@ -58,7 +58,7 @@
 
 規格檔 → 產生器 → 兩套瀏覽器測試 → 公開版後處理（去 MDCalc 逐字、去 FLACC、加回饋窗）→ 覆蓋本 repo 的 `calc-*.html` → **`node tools/build-ui.js`（補回分科列、目錄等介面）** → `npm test` → 更新頁尾與本 README 校對日 → push → 回 [ed-tools](https://github.com/xyzKIWI/ed-tools) 更新卡片校對日。
 
-> 產生器需同步的頁首修正：兒科頁「共 9 項」→「共 8 項」；核心十項頁標題改為「急診臨床計算機 — 核心十項」；呼吸頁標題改為「急診臨床計算機 — 呼吸／感染」。沒改回產生器的話，下次產生後 `tests/ui.test.js` 會失敗提醒。
+> 產生器需同步的修正：兒科頁「共 9 項」→「共 8 項」；核心十項頁標題改為「急診臨床計算機 — 核心十項」；呼吸頁標題改為「急診臨床計算機 — 呼吸／感染」；頁尾 README 連結改為 `https://github.com/xyzkiwi/calc#readme`。沒改回產生器的話，下次產生後 `tests/ui.test.js` 會失敗提醒。
 
 ## 回饋
 
