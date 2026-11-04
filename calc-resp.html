@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'none'; base-uri 'none'; connect-src https://docs.google.com"><title>急診臨床計算機 — 呼吸／感染</title><style>:root{--b:#174d7c;--bg:#f3f6f8;--line:#d5dde5;--ink:#17202a;--muted:#52616f;--card:#fff;--out:#eef6f4;--pre:#eef3f8}@media (prefers-color-scheme:dark){:root{--bg:#11161c;--line:#303a44;--ink:#e7edf2;--muted:#9aa9b6;--card:#192028;--out:#15312b;--pre:#222c35}.field input,.field select,.search{background:#141922;color:var(--ink)}.limits{background:rgba(180,83,9,.18)!important}}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,'Noto Sans TC',sans-serif}header{background:var(--b);color:white;padding:20px}header h1{margin:0;font-size:22px}main{max-width:980px;margin:auto;padding:15px}.search{width:100%;padding:11px;border:1px solid var(--line);border-radius:8px}.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:17px;margin:14px 0}.card h2{margin:0;font-size:18px}.zh,.meta,.src{color:var(--muted)}.meta,.src{font-size:13px}.q{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}.ql{font-weight:650}.opt{display:flex;gap:8px;border:1px solid var(--line);border-radius:6px;padding:7px;margin:5px 0}.opt b{margin-left:auto}.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.field label{display:block;font-weight:650}.field input,.field select{width:100%;padding:9px;border:1px solid var(--line);border-radius:6px}button{background:var(--b);color:white;border:0;border-radius:6px;padding:9px 16px;margin:11px 6px 0 0}.out{display:none;background:var(--out);border-left:4px solid #08735d;padding:11px;margin-top:12px}.out.show{display:block}.val{font-size:20px;font-weight:750}.formula,pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--pre);padding:10px;border-radius:5px;font-size:12px}.tree button{display:block;width:100%;text-align:left}.warn{color:#8b4b00}details{margin-top:12px}.src{border-top:1px solid var(--line);margin-top:12px;padding-top:9px}footer{padding:24px;text-align:center;color:var(--muted);font-size:13px}</style></head><body><header><h1>急診臨床計算機 — 呼吸／感染</h1><p>離線、零外連、規格可追溯｜共 5 項</p></header>
 <!-- ui:nav：由 tools/build-ui.js 產生，請勿手改 -->
-<nav class="ui-nav" aria-label="切換分科"><a class="ui-home" href="index.html">← 入口</a><a href="calc-ten.html">核心十項</a><a href="calc-trauma.html">外傷</a><a href="calc-cardio.html">心血管</a><a href="calc-neuro.html">神經</a><a href="calc-peds.html">兒科</a><a href="calc-triage.html">檢傷與流程</a><a href="calc-resp.html" aria-current="page">呼吸／感染</a><a href="calc-tox.html">中毒／精神</a><a href="calc-gi.html">腸胃／其他</a></nav>
+<nav class="ui-nav" aria-label="切換分科"><a class="ui-hub" href="../">← 急診小工具</a><a class="ui-home" href="index.html">計算機首頁</a><a href="calc-ten.html">核心十項</a><a href="calc-trauma.html">外傷</a><a href="calc-cardio.html">心血管</a><a href="calc-neuro.html">神經</a><a href="calc-peds.html">兒科</a><a href="calc-triage.html">檢傷與流程</a><a href="calc-resp.html" aria-current="page">呼吸／感染</a><a href="calc-tox.html">中毒／精神</a><a href="calc-gi.html">腸胃／其他</a></nav>
 <!-- /ui:nav -->
 <main><input id="search" class="search" placeholder="搜尋英文、中文或 slug"><section class="card" data-slug="endotracheal-tube-ett-depth-tidal-volume-calculator" data-search="endotracheal-tube-ett-depth-tidal-volume-calculator Endotracheal Tube (ETT) Depth and Tidal Volume Calculator 氣管內管深度與潮氣容積"><h2>Endotracheal Tube (ETT) Depth and Tidal Volume Calculator<br><span class="zh">氣管內管深度與潮氣容積</span></h2><div class="meta">領域：呼吸｜來源數：<span data-role="source-count">1</span></div><div class="formula">Chula formula: ETT depth = 0.1 * [height (cm)] + 4
 Ideal body weight (IBW), men = 50 kg + 2.3 * [height (in) – 60]
@@ -93,7 +93,7 @@ header{padding-left:max(20px,calc((100% - 950px)/2));padding-right:max(20px,calc
 .ui-nav a{flex:none;display:inline-flex;align-items:center;min-height:38px;padding:4px 13px;border:1px solid var(--line);border-radius:19px;color:var(--ink);text-decoration:none;font-size:14px;white-space:nowrap}
 .ui-nav a:hover{border-color:var(--ui-accent)}
 .ui-nav a[aria-current=page]{background:var(--ui-accent);border-color:var(--ui-accent);color:#fff;font-weight:650}
-.ui-nav .ui-home{font-weight:650}
+.ui-nav .ui-hub,.ui-nav .ui-home{font-weight:650}
 /* 搜尋與目錄 */
 #search{font-size:16px;min-height:46px}
 .ui-count{margin:6px 2px 0;font-size:13px;color:var(--muted)}
@@ -158,6 +158,9 @@ body #fbPanel textarea{font-size:16px}
 (function () {
   'use strict';
   var d = document;
+  // er.kiwi-ai.uk／pages.dev 的上一層就是急診小工具入口；github.io 版入口在 /ed-tools/
+  var hub = d.querySelector('.ui-nav .ui-hub');
+  if (hub && location.hostname.endsWith('github.io')) hub.href = '/ed-tools/';
   var main = d.querySelector('main');
   if (!main) return;
   var cards = [].slice.call(main.querySelectorAll('section.card[data-slug]'));

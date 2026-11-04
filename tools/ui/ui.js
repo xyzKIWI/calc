@@ -3,6 +3,9 @@
 (function () {
   'use strict';
   var d = document;
+  // er.kiwi-ai.uk／pages.dev 的上一層就是急診小工具入口；github.io 版入口在 /ed-tools/
+  var hub = d.querySelector('.ui-nav .ui-hub');
+  if (hub && location.hostname.endsWith('github.io')) hub.href = '/ed-tools/';
   var main = d.querySelector('main');
   if (!main) return;
   var cards = [].slice.call(main.querySelectorAll('section.card[data-slug]'));

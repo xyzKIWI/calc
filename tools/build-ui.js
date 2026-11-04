@@ -39,7 +39,7 @@ function blockRe(tag) {
 
 function navHtml(current) {
   const links = PAGES.map(p => `<a href="${p.file}"${p.file === current ? ' aria-current="page"' : ''}>${p.name}</a>`).join('');
-  return `<nav class="ui-nav" aria-label="切換分科"><a class="ui-home" href="index.html">← 入口</a>${links}</nav>`;
+  return `<nav class="ui-nav" aria-label="切換分科"><a class="ui-hub" href="../">← 急診小工具</a><a class="ui-home" href="index.html">計算機首頁</a>${links}</nav>`;
 }
 
 function assetsHtml() {

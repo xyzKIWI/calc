@@ -30,7 +30,7 @@ describe('分頁頁首與分科列', () => {
       const nav = p.doc.querySelector('nav.ui-nav');
       assert.ok(nav, '缺分科列');
       const links = nav.querySelectorAll('a').map(a => a.getAttribute('href'));
-      assert.deepEqual(links, ['index.html', ...ui.PAGES.map(x => x.file)]);
+      assert.deepEqual(links, ['../', 'index.html', ...ui.PAGES.map(x => x.file)]);
       const current = nav.querySelectorAll('a[aria-current]');
       assert.equal(current.length, 1);
       assert.equal(current[0].getAttribute('href'), file);

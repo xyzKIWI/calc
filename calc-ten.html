@@ -18,7 +18,7 @@ footer{max-width:920px;margin:auto;border-top:1px solid var(--line);padding:18px
 </style></head><body>
 <header><h1>急診臨床計算機 — 核心十項</h1><p>精確版・離線可用・來源可追溯｜共 10 項｜規格快照 2026-08-20</p></header>
 <!-- ui:nav：由 tools/build-ui.js 產生，請勿手改 -->
-<nav class="ui-nav" aria-label="切換分科"><a class="ui-home" href="index.html">← 入口</a><a href="calc-ten.html" aria-current="page">核心十項</a><a href="calc-trauma.html">外傷</a><a href="calc-cardio.html">心血管</a><a href="calc-neuro.html">神經</a><a href="calc-peds.html">兒科</a><a href="calc-triage.html">檢傷與流程</a><a href="calc-resp.html">呼吸／感染</a><a href="calc-tox.html">中毒／精神</a><a href="calc-gi.html">腸胃／其他</a></nav>
+<nav class="ui-nav" aria-label="切換分科"><a class="ui-hub" href="../">← 急診小工具</a><a class="ui-home" href="index.html">計算機首頁</a><a href="calc-ten.html" aria-current="page">核心十項</a><a href="calc-trauma.html">外傷</a><a href="calc-cardio.html">心血管</a><a href="calc-neuro.html">神經</a><a href="calc-peds.html">兒科</a><a href="calc-triage.html">檢傷與流程</a><a href="calc-resp.html">呼吸／感染</a><a href="calc-tox.html">中毒／精神</a><a href="calc-gi.html">腸胃／其他</a></nav>
 <!-- /ui:nav -->
 
 <main><label for="search">搜尋計算機</label><input class="search" id="search" type="search" placeholder="英文、中文或 slug">
@@ -341,7 +341,7 @@ header{padding-left:max(20px,calc((100% - 950px)/2));padding-right:max(20px,calc
 .ui-nav a{flex:none;display:inline-flex;align-items:center;min-height:38px;padding:4px 13px;border:1px solid var(--line);border-radius:19px;color:var(--ink);text-decoration:none;font-size:14px;white-space:nowrap}
 .ui-nav a:hover{border-color:var(--ui-accent)}
 .ui-nav a[aria-current=page]{background:var(--ui-accent);border-color:var(--ui-accent);color:#fff;font-weight:650}
-.ui-nav .ui-home{font-weight:650}
+.ui-nav .ui-hub,.ui-nav .ui-home{font-weight:650}
 /* 搜尋與目錄 */
 #search{font-size:16px;min-height:46px}
 .ui-count{margin:6px 2px 0;font-size:13px;color:var(--muted)}
@@ -406,6 +406,9 @@ body #fbPanel textarea{font-size:16px}
 (function () {
   'use strict';
   var d = document;
+  // er.kiwi-ai.uk／pages.dev 的上一層就是急診小工具入口；github.io 版入口在 /ed-tools/
+  var hub = d.querySelector('.ui-nav .ui-hub');
+  if (hub && location.hostname.endsWith('github.io')) hub.href = '/ed-tools/';
   var main = d.querySelector('main');
   if (!main) return;
   var cards = [].slice.call(main.querySelectorAll('section.card[data-slug]'));

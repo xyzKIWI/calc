@@ -7,7 +7,7 @@ header{padding-left:max(20px,calc((100% - 950px)/2));padding-right:max(20px,calc
 .ui-nav a{flex:none;display:inline-flex;align-items:center;min-height:38px;padding:4px 13px;border:1px solid var(--line);border-radius:19px;color:var(--ink);text-decoration:none;font-size:14px;white-space:nowrap}
 .ui-nav a:hover{border-color:var(--ui-accent)}
 .ui-nav a[aria-current=page]{background:var(--ui-accent);border-color:var(--ui-accent);color:#fff;font-weight:650}
-.ui-nav .ui-home{font-weight:650}
+.ui-nav .ui-hub,.ui-nav .ui-home{font-weight:650}
 /* 搜尋與目錄 */
 #search{font-size:16px;min-height:46px}
 .ui-count{margin:6px 2px 0;font-size:13px;color:var(--muted)}
